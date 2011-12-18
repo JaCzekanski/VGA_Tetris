@@ -30,4 +30,7 @@ ldi r16, 0
 sts block_y, r16
 sts block_x, r16
 
+ldi r16,0b1
+sts block_color, r16
+
 sei

@@ -12,7 +12,7 @@
 
 /* Main program  */
 
-	ldi r16, 241
+	ldi r16, 230
 	clr Xh
 	ldi Xl, 0x60
 
@@ -100,11 +100,12 @@ InfinityLoop:
 	clr VSYNC
 
 	rcall PAD_GetState
+
 	;out UDR, r10
 
 	mov r16, r5
 	inc r16
-	cpi r16, 10
+	cpi r16, 5
 	mov r5, r16
 	breq update_block
 
@@ -142,9 +143,26 @@ InfinityLoop:
 
 		mov r5, r0
 		clr r16
+		sts block_y, r16
+
+
+		; And random new color
+
+		lds r16, block_color
+		inc r16
+		andi r16, 0b111
+		breq random_inc
+random_inc_:
+		sts block_color, r16
+
+		
+		clr r16
 
 		rjmp LimitBlockY_
 
+random_inc:
+	inc r16
+	rjmp random_inc_
 
 block_clear:
 	;; Clear previous position
@@ -174,7 +192,7 @@ block_clear:
 		inc r16
 
 		cpi r16, 21
-		brsh LimitBlockY
+		brsh LimitBlockY_branch
 
 LimitBlockY_:
 
@@ -184,8 +202,16 @@ LimitBlockY_:
 		rcall MoveRight
 		sbrc r10, 1 ; Left
 		rcall MoveLeft
+		sbrc r10, 7 ; A
+		rjmp check_move_down
+		ldi r16, 0x00
+		mov r11, r16
 
 		rjmp update_block_
+
+
+LimitBlockY_branch:
+	rjmp LimitBlockY
 
 MoveRight:
 	lds r16, block_x
@@ -212,6 +238,69 @@ MoveLeftContinue:
 	dec r16
 	sts block_x, r16
 	ret
+
+rcall_MoveDown:
+	rcall MoveDown
+	rjmp check_move_down_
+	
+check_move_down:
+
+		mov r16, r11
+		cpi r16, 0x00 ; Pressed, not continuosly
+		breq rcall_MoveDown
+check_move_down_:
+		ldi r16, 0xff
+		mov r11, r16
+		rjmp update_block_
+MoveDown:
+			push r0
+			push r1
+
+			lds r16, block_y
+			lds r17, 32
+			mul r16, r17 ; 32*y ->r0:r1
+
+				ldi Xl, LOW( 96+10 + (32*5) )
+				ldi Xh, HIGH( 96+10 + (32*5) )
+				
+			add r0, Xl
+			adc r1, Xh
+
+			lds r16, block_x
+			ldi r17, 0
+			add r0, r16
+			adc r1, r17
+
+			mov Xh, r1
+			mov Xl, r0
+
+			;; We've got multipled y pos
+
+			ldi r16, 0
+
+			MoveDown_loop:
+				adiw X, 32
+				ld r17, X
+
+				cpi r17, 0
+				brne MoveDownStop 
+
+		MoveDownStop_:
+				inc r16            ; 1 clk
+				cpi r16, 21
+				breq MoveDown_loop_    ; 1/2 clk
+				rjmp MoveDown_loop     ; 2 clk
+
+			MoveDown_loop_:
+				pop r1
+				pop r0
+				ret
+
+			MoveDownStop:
+				sts block_y, r16
+				rjmp MoveDown_loop_
+
+
 
 LimitBlockY:
 	ldi r16, 0
@@ -241,7 +330,8 @@ LimitBlockXr:
 		lds r16, block_x
 		add Xl, r16
 		adc Xh, r0
-		ldi r17, 0b001
+		lds r17, block_color
+		;ldi r17, 0b001
 		st X, r17
 
 
@@ -255,3 +345,4 @@ rjmp InfinityLoop
 .org SRAM_START+960
 block_y: .BYTE 1
 block_x: .BYTE 1
+block_color: .BYTE 1

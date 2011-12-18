@@ -1,12 +1,12 @@
 
-AVRASM ver. 2.1.42  D:\KubX\dev\AVR\AVR_Tetris\main.asm Sun Dec 18 18:47:29 2011
+AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Sun Dec 18 23:43:24 2011
 
-D:\KubX\dev\AVR\AVR_Tetris\main.asm(1): Including file 'd:\app\Atmel\AVR Tools\AvrAssembler2\Appnotes\m8def.inc'
-D:\KubX\dev\AVR\AVR_Tetris\main.asm(2): Including file 'D:\KubX\dev\AVR\AVR_Tetris\macros.asm'
-D:\KubX\dev\AVR\AVR_Tetris\main.asm(10): Including file 'D:\KubX\dev\AVR\AVR_Tetris\Video.asm'
-D:\KubX\dev\AVR\AVR_Tetris\main.asm(11): Including file 'D:\KubX\dev\AVR\AVR_Tetris\Initialization.asm'
-D:\KubX\dev\AVR\AVR_Tetris\main.asm(251): Including file 'D:\KubX\dev\AVR\AVR_Tetris\Pad.asm'
-D:\KubX\dev\AVR\AVR_Tetris\main.asm(252): Including file 'D:\KubX\dev\AVR\AVR_Tetris\Uart.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1): Including file 'd:\app\Atmel\AVR Tools\AvrAssembler2\Appnotes\m8def.inc'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(2): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\macros.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(10): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Video.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(11): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Initialization.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(341): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(342): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm'
                  
                  
                  
@@ -1043,254 +1043,347 @@ D:\KubX\dev\AVR\AVR_Tetris\main.asm(252): Including file 'D:\KubX\dev\AVR\AVR_Te
 000083 dfe2      rcall VIDEO_init
                  
                  ; Init UART at 57600bps
-000084 d0c0      rcall UART_init
+000084 d0fe      rcall UART_init
                  
                  ; Initialize pad
-000085 d096      rcall PAD_init
+000085 d0d4      rcall PAD_init
                  
                  ; Variables
 000086 e000      ldi r16, 0
 000087 9300 0420 sts block_y, r16
 000089 9300 0421 sts block_x, r16
                  
-00008b 9478      sei
+00008b e001      ldi r16,0b1
+00008c 9300 0422 sts block_color, r16
+                 
+00008e 9478      sei
                  
                  /* Main program  */
                  
-00008c ef01      	ldi r16, 241
-00008d 27bb      	clr Xh
-00008e e6a0      	ldi Xl, 0x60
+00008f ee06      	ldi r16, 230
+000090 27bb      	clr Xh
+000091 e6a0      	ldi Xl, 0x60
                  
                  	ClearLoop:
-00008f 920d      	st X+, r0
-000090 920d      	st X+, r0
-000091 920d      	st X+, r0
 000092 920d      	st X+, r0
-000093 950a      	dec r16            ; 1 clk
-000094 f009      	breq ClearLoop_    ; 1/2 clk
-000095 cff9      	rjmp ClearLoop     ; 2 clk
+000093 920d      	st X+, r0
+000094 920d      	st X+, r0
+000095 920d      	st X+, r0
+000096 950a      	dec r16            ; 1 clk
+000097 f009      	breq ClearLoop_    ; 1/2 clk
+000098 cff9      	rjmp ClearLoop     ; 2 clk
                  
                  ClearLoop_:
                  
                  	; Set corners
-000096 e001      	ldi r16, 0b1
+000099 e001      	ldi r16, 0b1
                  
-000097 e6a0      	ldi Xl, LOW( 96 )
-000098 e0b0      	ldi Xh, HIGH( 96 )
-000099 930c      	st X, r16
-                 
-                 
-00009a e002      	ldi r16, 0b10
-00009b e7af      	ldi Xl, LOW( 96+31)
-00009c e0b0      	ldi Xh, HIGH( 96+31)
-00009d 930c      	st X, r16
+00009a e6a0      	ldi Xl, LOW( 96 )
+00009b e0b0      	ldi Xh, HIGH( 96 )
+00009c 930c      	st X, r16
                  
                  
-00009e e001      	ldi r16, 0b1
-00009f eea0      	ldi Xl, LOW( 96 +(32*28) )
-0000a0 e0b3      	ldi Xh, HIGH( 96 +(32*28))
-0000a1 930c      	st X, r16
+00009d e002      	ldi r16, 0b10
+00009e e7af      	ldi Xl, LOW( 96+31)
+00009f e0b0      	ldi Xh, HIGH( 96+31)
+0000a0 930c      	st X, r16
                  
-0000a2 e002      	ldi r16, 0b10
-0000a3 efaf      	ldi Xl, LOW( 96 +(32*28) +31)
-0000a4 e0b3      	ldi Xh, HIGH( 96 +(32*28)+31)
-0000a5 930c      	st X, r16
                  
-0000a6 e00f      	ldi r16, 15
-0000a7 eea9      	ldi Xl, LOW( 96+9 + 32*4 )
-0000a8 e0b0      	ldi Xh, HIGH( 96+9 + 32*4 )
+0000a1 e001      	ldi r16, 0b1
+0000a2 eea0      	ldi Xl, LOW( 96 +(32*28) )
+0000a3 e0b3      	ldi Xh, HIGH( 96 +(32*28))
+0000a4 930c      	st X, r16
+                 
+0000a5 e002      	ldi r16, 0b10
+0000a6 efaf      	ldi Xl, LOW( 96 +(32*28) +31)
+0000a7 e0b3      	ldi Xh, HIGH( 96 +(32*28)+31)
+0000a8 930c      	st X, r16
+                 
+0000a9 e00f      	ldi r16, 15
+0000aa eea9      	ldi Xl, LOW( 96+9 + 32*4 )
+0000ab e0b0      	ldi Xh, HIGH( 96+9 + 32*4 )
                  hor_loop_1:
                  
-0000a9 921d      	st X+, r1
+0000ac 921d      	st X+, r1
                  
-0000aa 950a      	dec r16            ; 1 clk
-0000ab f009      	breq hor_loop_1_end    ; 1/2 clk
-0000ac cffc      	rjmp hor_loop_1     ; 2 clk
+0000ad 950a      	dec r16            ; 1 clk
+0000ae f009      	breq hor_loop_1_end    ; 1/2 clk
+0000af cffc      	rjmp hor_loop_1     ; 2 clk
                  
                  hor_loop_1_end:
-0000ad e105      	ldi r16, 21
-0000ae e0a9      	ldi Xl, LOW( 96+9 + 32*5 )
-0000af e0b1      	ldi Xh, HIGH( 96+9 + 32*5 )
+0000b0 e105      	ldi r16, 21
+0000b1 e0a9      	ldi Xl, LOW( 96+9 + 32*5 )
+0000b2 e0b1      	ldi Xh, HIGH( 96+9 + 32*5 )
                  
                  ver_loop:
                  
-0000b0 921c      	st X, r1
-0000b1 961e      	adiw X, 14
-0000b2 921c      	st X, r1
-0000b3 9652      	adiw X, 18
+0000b3 921c      	st X, r1
+0000b4 961e      	adiw X, 14
+0000b5 921c      	st X, r1
+0000b6 9652      	adiw X, 18
                  
-0000b4 950a      	dec r16            ; 1 clk
-0000b5 f009      	breq ver_loop_end    ; 1/2 clk
-0000b6 cff9      	rjmp ver_loop     ; 2 clk
+0000b7 950a      	dec r16            ; 1 clk
+0000b8 f009      	breq ver_loop_end    ; 1/2 clk
+0000b9 cff9      	rjmp ver_loop     ; 2 clk
                  
                  ver_loop_end:
                  
-0000b7 e00f      	ldi r16, 15
-0000b8 eaa9      	ldi Xl, LOW( 96+9 + (32*26) )
-0000b9 e0b3      	ldi Xh, HIGH( 96+9 + (32*26) )
+0000ba e00f      	ldi r16, 15
+0000bb eaa9      	ldi Xl, LOW( 96+9 + (32*26) )
+0000bc e0b3      	ldi Xh, HIGH( 96+9 + (32*26) )
                  hor_loop_2:
                  
-0000ba 921d      	st X+, r1
+0000bd 921d      	st X+, r1
                  
-0000bb 950a      	dec r16            ; 1 clk
-0000bc f009      	breq InfinityLoop    ; 1/2 clk
-0000bd cffc      	rjmp hor_loop_2     ; 2 clk
+0000be 950a      	dec r16            ; 1 clk
+0000bf f009      	breq InfinityLoop    ; 1/2 clk
+0000c0 cffc      	rjmp hor_loop_2     ; 2 clk
                  
                  
                  
                  InfinityLoop:
                  	WAIT_VSYNC:
-0000be 3f7f      	cpi VSYNC, 0xff
-0000bf f7f1      	brne WAIT_VSYNC
-0000c0 2777      	clr VSYNC
+0000c1 3f7f      	cpi VSYNC, 0xff
+0000c2 f7f1      	brne WAIT_VSYNC
+0000c3 2777      	clr VSYNC
                  
-0000c1 d061      	rcall PAD_GetState
+0000c4 d09c      	rcall PAD_GetState
+                 
                  	;out UDR, r10
                  
-0000c2 2d05      	mov r16, r5
-0000c3 9503      	inc r16
-0000c4 300a      	cpi r16, 10
-0000c5 2e50      	mov r5, r16
-0000c6 f009      	breq update_block
+0000c5 2d05      	mov r16, r5
+0000c6 9503      	inc r16
+0000c7 3005      	cpi r16, 5
+0000c8 2e50      	mov r5, r16
+0000c9 f009      	breq update_block
                  
-0000c7 c045      	rjmp update_block_
+0000ca c07f      	rjmp update_block_
                  
                  	update_block:
                  
                  	;; Check, if there is another block in the wall :)
                  
                  	
-0000c8 9100 0420 		lds r16, block_y
-0000ca 9503      		inc r16
-0000cb e0aa      		ldi Xl, LOW( 96+10 + (32*5) )
-0000cc e0b1      		ldi Xh, HIGH( 96+10 + (32*5) )
+0000cb 9100 0420 		lds r16, block_y
+0000cd 9503      		inc r16
+0000ce e0aa      		ldi Xl, LOW( 96+10 + (32*5) )
+0000cf e0b1      		ldi Xh, HIGH( 96+10 + (32*5) )
                  
                  
                  	loop_check_for_block:
                  
-0000cd 9690      		adiw X, 32
+0000d0 9690      		adiw X, 32
                  
-0000ce 950a      		dec r16            ; 1 clk
-0000cf f009      		breq loop_check_for_block_    ; 1/2 clk
-0000d0 cffc      		rjmp loop_check_for_block     ; 2 clk
+0000d1 950a      		dec r16            ; 1 clk
+0000d2 f009      		breq loop_check_for_block_    ; 1/2 clk
+0000d3 cffc      		rjmp loop_check_for_block     ; 2 clk
                  
                  	loop_check_for_block_:
-0000d1 9100 0421 		lds r16, block_x
-0000d3 0fa0      		add Xl, r16
-0000d4 1db0      		adc Xh, r0
-0000d5 911c      		ld r17, X
+0000d4 9100 0421 		lds r16, block_x
+0000d6 0fa0      		add Xl, r16
+0000d7 1db0      		adc Xh, r0
+0000d8 911c      		ld r17, X
                  
-0000d6 1510      		cp r17, r0
-0000d7 f019      		breq block_clear; We can go further
+0000d9 1510      		cp r17, r0
+0000da f079      		breq block_clear; We can go further
                  
                  		; We just reset position
                  
-0000d8 2c50      		mov r5, r0
-0000d9 2700      		clr r16
+0000db 2c50      		mov r5, r0
+0000dc 2700      		clr r16
+0000dd 9300 0420 		sts block_y, r16
                  
-0000da c014      		rjmp LimitBlockY_
                  
+                 		; And random new color
+                 
+0000df 9100 0422 		lds r16, block_color
+0000e1 9503      		inc r16
+0000e2 7007      		andi r16, 0b111
+0000e3 f021      		breq random_inc
+                 random_inc_:
+0000e4 9300 0422 		sts block_color, r16
+                 
+                 		
+0000e6 2700      		clr r16
+                 
+0000e7 c016      		rjmp LimitBlockY_
+                 
+                 random_inc:
+0000e8 9503      	inc r16
+0000e9 cffa      	rjmp random_inc_
                  
                  block_clear:
                  	;; Clear previous position
-0000db 9100 0420 		lds r16, block_y
-0000dd e0aa      		ldi Xl, LOW( 96+10 + (32*5) )
-0000de e0b1      		ldi Xh, HIGH( 96+10 + (32*5) )
+0000ea 9100 0420 		lds r16, block_y
+0000ec e0aa      		ldi Xl, LOW( 96+10 + (32*5) )
+0000ed e0b1      		ldi Xh, HIGH( 96+10 + (32*5) )
                  
                  
                  	loop_clear_block:
                  
-0000df 9690      		adiw X, 32
+0000ee 9690      		adiw X, 32
                  
-0000e0 950a      		dec r16            ; 1 clk
-0000e1 f009      		breq loop_clear_block_    ; 1/2 clk
-0000e2 cffc      		rjmp loop_clear_block     ; 2 clk
+0000ef 950a      		dec r16            ; 1 clk
+0000f0 f009      		breq loop_clear_block_    ; 1/2 clk
+0000f1 cffc      		rjmp loop_clear_block     ; 2 clk
                  
                  	loop_clear_block_:
-0000e3 9100 0421 		lds r16, block_x
-0000e5 0fa0      		add Xl, r16
-0000e6 1db0      		adc Xh, r0
-0000e7 e010      		ldi r17, 0b000
-0000e8 931c      		st X, r17
+0000f2 9100 0421 		lds r16, block_x
+0000f4 0fa0      		add Xl, r16
+0000f5 1db0      		adc Xh, r0
+0000f6 e010      		ldi r17, 0b000
+0000f7 931c      		st X, r17
                  
                  
-0000e9 2c50      		mov r5, r0
-0000ea 9100 0420 		lds r16, block_y
-0000ec 9503      		inc r16
+0000f8 2c50      		mov r5, r0
+0000f9 9100 0420 		lds r16, block_y
+0000fb 9503      		inc r16
                  
-0000ed 3105      		cpi r16, 21
-0000ee f4c8      		brsh LimitBlockY
+0000fc 3105      		cpi r16, 21
+0000fd f458      		brsh LimitBlockY_branch
                  
                  LimitBlockY_:
                  
-0000ef 9300 0420 		sts block_y, r16
+0000fe 9300 0420 		sts block_y, r16
                  
-0000f1 fca0      		sbrc r10, 0 ; Right
-0000f2 d003      		rcall MoveRight
-0000f3 fca1      		sbrc r10, 1 ; Left
-0000f4 d00a      		rcall MoveLeft
+000100 fca0      		sbrc r10, 0 ; Right
+000101 d008      		rcall MoveRight
+000102 fca1      		sbrc r10, 1 ; Left
+000103 d00f      		rcall MoveLeft
+000104 fca7      		sbrc r10, 7 ; A
+000105 c018      		rjmp check_move_down
+000106 e000      		ldi r16, 0x00
+000107 2eb0      		mov r11, r16
                  
-0000f5 c017      		rjmp update_block_
+000108 c041      		rjmp update_block_
+                 
+                 
+                 LimitBlockY_branch:
+000109 c03b      	rjmp LimitBlockY
                  
                  MoveRight:
-0000f6 9100 0421 	lds r16, block_x
+00010a 9100 0421 	lds r16, block_x
                  
-0000f8 300c      	cpi r16, 12
-0000f9 f409      	brne MoveRightContinue
+00010c 300c      	cpi r16, 12
+00010d f409      	brne MoveRightContinue
                  
-0000fa 9508      	ret
+00010e 9508      	ret
                  
                  MoveRightContinue:
-0000fb 9503      	inc r16
-0000fc 9300 0421 	sts block_x, r16
-0000fe 9508      	ret
+00010f 9503      	inc r16
+000110 9300 0421 	sts block_x, r16
+000112 9508      	ret
                  
                  MoveLeft:
-0000ff 9100 0421 	lds r16, block_x
+000113 9100 0421 	lds r16, block_x
                  	
-000101 3000      	cpi r16, 0
-000102 f409      	brne MoveLeftContinue
+000115 3000      	cpi r16, 0
+000116 f409      	brne MoveLeftContinue
                  
-000103 9508      	ret
+000117 9508      	ret
                  	
                  MoveLeftContinue:
-000104 950a      	dec r16
-000105 9300 0421 	sts block_x, r16
-000107 9508      	ret
+000118 950a      	dec r16
+000119 9300 0421 	sts block_x, r16
+00011b 9508      	ret
+                 
+                 rcall_MoveDown:
+00011c d007      	rcall MoveDown
+00011d c003      	rjmp check_move_down_
+                 	
+                 check_move_down:
+                 
+00011e 2d0b      		mov r16, r11
+00011f 3000      		cpi r16, 0x00 ; Pressed, not continuosly
+000120 f3d9      		breq rcall_MoveDown
+                 check_move_down_:
+000121 ef0f      		ldi r16, 0xff
+000122 2eb0      		mov r11, r16
+000123 c026      		rjmp update_block_
+                 MoveDown:
+000124 920f      			push r0
+000125 921f      			push r1
+                 
+000126 9100 0420 			lds r16, block_y
+000128 9110 0020 			lds r17, 32
+00012a 9f01      			mul r16, r17 ; 32*y ->r0:r1
+                 
+00012b e0aa      				ldi Xl, LOW( 96+10 + (32*5) )
+00012c e0b1      				ldi Xh, HIGH( 96+10 + (32*5) )
+                 				
+00012d 0e0a      			add r0, Xl
+00012e 1e1b      			adc r1, Xh
+                 
+00012f 9100 0421 			lds r16, block_x
+000131 e010      			ldi r17, 0
+000132 0e00      			add r0, r16
+000133 1e11      			adc r1, r17
+                 
+000134 2db1      			mov Xh, r1
+000135 2da0      			mov Xl, r0
+                 
+                 			;; We've got multipled y pos
+                 
+000136 e000      			ldi r16, 0
+                 
+                 			MoveDown_loop:
+000137 9690      				adiw X, 32
+000138 911c      				ld r17, X
+                 
+000139 3010      				cpi r17, 0
+00013a f439      				brne MoveDownStop 
+                 
+                 		MoveDownStop_:
+00013b 9503      				inc r16            ; 1 clk
+00013c 3105      				cpi r16, 21
+00013d f009      				breq MoveDown_loop_    ; 1/2 clk
+00013e cff8      				rjmp MoveDown_loop     ; 2 clk
+                 
+                 			MoveDown_loop_:
+00013f 901f      				pop r1
+000140 900f      				pop r0
+000141 9508      				ret
+                 
+                 			MoveDownStop:
+000142 9300 0420 				sts block_y, r16
+000144 cffa      				rjmp MoveDown_loop_
+                 
+                 
                  
                  LimitBlockY:
-000108 e000      	ldi r16, 0
-000109 cfe5      	rjmp LimitBlockY_
+000145 e000      	ldi r16, 0
+000146 cfb7      	rjmp LimitBlockY_
                  
                  LimitBlockXr:
-00010a e00c      	ldi r16, 12
-00010b 9300 0421 	sts block_x, r16
+000147 e00c      	ldi r16, 12
+000148 9300 0421 	sts block_x, r16
                  	
                  	update_block_:
                  
                  
-00010d 9100 0420 	lds r16, block_y
-00010f e0aa      		ldi Xl, LOW( 96+10 + (32*5) )
-000110 e0b1      		ldi Xh, HIGH( 96+10 + (32*5) )
+00014a 9100 0420 	lds r16, block_y
+00014c e0aa      		ldi Xl, LOW( 96+10 + (32*5) )
+00014d e0b1      		ldi Xh, HIGH( 96+10 + (32*5) )
                  	
                  
                  	loop_draw_block:
                  
-000111 9690      		adiw X, 32
+00014e 9690      		adiw X, 32
                  
-000112 950a      		dec r16            ; 1 clk
-000113 f009      		breq loop_draw_block_    ; 1/2 clk
-000114 cffc      		rjmp loop_draw_block     ; 2 clk
+00014f 950a      		dec r16            ; 1 clk
+000150 f009      		breq loop_draw_block_    ; 1/2 clk
+000151 cffc      		rjmp loop_draw_block     ; 2 clk
                  
                  	loop_draw_block_:
-000115 9100 0421 		lds r16, block_x
-000117 0fa0      		add Xl, r16
-000118 1db0      		adc Xh, r0
-000119 e011      		ldi r17, 0b001
-00011a 931c      		st X, r17
+000152 9100 0421 		lds r16, block_x
+000154 0fa0      		add Xl, r16
+000155 1db0      		adc Xh, r0
+000156 9110 0422 		lds r17, block_color
+                 		;ldi r17, 0b001
+000158 931c      		st X, r17
                  
                  
-00011b cfa2      rjmp InfinityLoop
+000159 cf67      rjmp InfinityLoop
                  
                  
                  .include "Pad.asm"
@@ -1298,14 +1391,14 @@ D:\KubX\dev\AVR\AVR_Tetris\main.asm(252): Including file 'D:\KubX\dev\AVR\AVR_Te
                  
                  ; Information about buttons is stored in R10
                  PAD_init:
-00011c 9a8a      	sbi DDRD, PAD_LATCH
-00011d 988b      	cbi DDRD, PAD_DATA
-00011e 9a8c      	sbi DDRD, PAD_CLK
+00015a 9a8a      	sbi DDRD, PAD_LATCH
+00015b 988b      	cbi DDRD, PAD_DATA
+00015c 9a8c      	sbi DDRD, PAD_CLK
                  
-00011f 9892      	cbi PORTD, PAD_LATCH
-000120 9a94      	sbi PORTD, PAD_CLK
-000121 9a93      	sbi PORTD, PAD_DATA
-000122 9508      	ret
+00015d 9892      	cbi PORTD, PAD_LATCH
+00015e 9a94      	sbi PORTD, PAD_CLK
+00015f 9a93      	sbi PORTD, PAD_DATA
+000160 9508      	ret
                  
                  ; Reads pad state
                  ; return r10 - pad1_byte
@@ -1316,55 +1409,55 @@ D:\KubX\dev\AVR\AVR_Tetris\main.asm(252): Including file 'D:\KubX\dev\AVR\AVR_Te
                  ;       c t       t
                  ;       t
                  PAD_GetState:
-000123 930f      		push r16
-000124 931f      		push r17
-000125 932f      		push r18
+000161 930f      		push r16
+000162 931f      		push r17
+000163 932f      		push r18
                  
-000126 9a92      		sbi PAD_PORT, PAD_LATCH
-000127 e30c
-000128 950a
-000129 f009
-00012a cffd      		delay200ns 60 ;12us
-00012b 9892      		cbi PAD_PORT, PAD_LATCH
+000164 9a92      		sbi PAD_PORT, PAD_LATCH
+000165 e30c
+000166 950a
+000167 f009
+000168 cffd      		delay200ns 60 ;12us
+000169 9892      		cbi PAD_PORT, PAD_LATCH
                  
-00012c e028      		ldi r18, 8
-00012d 2711      		clr r17
+00016a e028      		ldi r18, 8
+00016b 2711      		clr r17
                  	; 8bits
                  	GetPadState_loop:
                  
-00012e e30c
-00012f 950a
-000130 f009
-000131 cffd      		delay200ns 60 ;6us
-000132 9894      		cbi PAD_PORT, PAD_CLK
+00016c e30c
+00016d 950a
+00016e f009
+00016f cffd      		delay200ns 60 ;6us
+000170 9894      		cbi PAD_PORT, PAD_CLK
                  	
-000133 9b83      		sbis PAD_PIN, PAD_DATA ; pominie, jezeli nienacisniety
-000134 d00e      		rcall button_pressed
+000171 9b83      		sbis PAD_PIN, PAD_DATA ; pominie, jezeli nienacisniety
+000172 d00e      		rcall button_pressed
                  
-000135 e30c
-000136 950a
-000137 f009
-000138 cffd      		delay200ns 60 ;6us
-000139 9a94      		sbi PAD_PORT, PAD_CLK
+000173 e30c
+000174 950a
+000175 f009
+000176 cffd      		delay200ns 60 ;6us
+000177 9a94      		sbi PAD_PORT, PAD_CLK
                  
                  	GetPadState_continue:
                  
-00013a 952a      		dec r18
-00013b f011      		breq GetPadState_end
-00013c 0f11      		lsl r17 ; xxxxxxx1 -> xxxxxx1y
-00013d cff0      		rjmp GetPadState_loop
+000178 952a      		dec r18
+000179 f011      		breq GetPadState_end
+00017a 0f11      		lsl r17 ; xxxxxxx1 -> xxxxxx1y
+00017b cff0      		rjmp GetPadState_loop
                  
                  	GetPadState_end:
-00013e 2ea1      	mov r10, r17
+00017c 2ea1      	mov r10, r17
                  
-00013f 912f      	pop r18
-000140 911f      	pop r17
-000141 910f      	pop r16
-000142 9508      	ret
+00017d 912f      	pop r18
+00017e 911f      	pop r17
+00017f 910f      	pop r16
+000180 9508      	ret
                  
                  	button_pressed:
-000143 6011      		ori r17, 1
-000144 9508      		ret
+000181 6011      		ori r17, 1
+000182 9508      		ret
                  .include "Uart.asm"
                  
                  .endif
@@ -1374,53 +1467,54 @@ D:\KubX\dev\AVR\AVR_Tetris\main.asm(252): Including file 'D:\KubX\dev\AVR\AVR_Te
                  
                  ; No args. F_CPU defined required
                  UART_init:
-000145 e000      	ldi r16, high(F_CPU/16/F_UART-1 )
-000146 bd00      	out UBRRH, r16
-000147 e104      	ldi r16, low(F_CPU/16/F_UART-1)
-000148 b909      	out UBRRL, r16
+000183 e000      	ldi r16, high(F_CPU/16/F_UART-1 )
+000184 bd00      	out UBRRH, r16
+000185 e104      	ldi r16, low(F_CPU/16/F_UART-1)
+000186 b909      	out UBRRL, r16
                  
-000149 e108      	ldi r16, (1<<RXEN)|(1<<TXEN)
-00014a b90a      	out UCSRB, r16
+000187 e108      	ldi r16, (1<<RXEN)|(1<<TXEN)
+000188 b90a      	out UCSRB, r16
                  
                  	; 8N1
-00014b e806      	ldi r16, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0); ;8bit
-00014c bd00      	out UCSRC, r16
+000189 e806      	ldi r16, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0); ;8bit
+00018a bd00      	out UCSRC, r16
                  
-00014d 9508      	ret
+00018b 9508      	ret
                  
                  ; r16 - byte
                  UART_putc:
-00014e 9b5d      	sbis UCSRA, UDRE
-00014f cffe      	rjmp UART_putc
+00018c 9b5d      	sbis UCSRA, UDRE
+00018d cffe      	rjmp UART_putc
                  
-000150 b90c      	out UDR, r16
-000151 9508      	ret
+00018e b90c      	out UDR, r16
+00018f 9508      	ret
                  
                  ; Z - String address
                  UART_puts:
                  	; Z -> r0
-000152 9105      	lpm r16, Z+
-000153 3000      	cpi r16, 0
-000154 f011      	breq UART_puts_end
+000190 9105      	lpm r16, Z+
+000191 3000      	cpi r16, 0
+000192 f011      	breq UART_puts_end
                  
-000155 dff8      	rcall UART_putc
-000156 cffb      	rjmp UART_puts
+000193 dff8      	rcall UART_putc
+000194 cffb      	rjmp UART_puts
                  
                  UART_puts_end:
-000157 9508      	ret
+000195 9508      	ret
                  
                  ; r16 - byte
                  UART_getc:
-000158 9b5f      	sbis UCSRA, RXC
-000159 cffe      	rjmp UART_getc
+000196 9b5f      	sbis UCSRA, RXC
+000197 cffe      	rjmp UART_getc
                  
-00015a b10c      	in r16, UDR
-00015b 9508      	ret
+000198 b10c      	in r16, UDR
+000199 9508      	ret
                  
                  .dseg
                  .org SRAM_START+960
 000420           block_y: .BYTE 1
 000421           block_x: .BYTE 1
+000422           block_color: .BYTE 1
 
 
 RESOURCE USE INFORMATION
@@ -1438,40 +1532,40 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 ATmega8 register use summary:
-r0 :  12 r1 :   5 r2 :   0 r3 :   0 r4 :   0 r5 :   4 r6 :   0 r7 :   0 
-r8 :   0 r9 :   0 r10:   3 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16: 100 r17:  12 r18:   4 r19:   0 r20:   0 r21:   4 r22:  20 r23:   4 
-r24:   7 r25:   6 r26:  14 r27:  14 r28:   4 r29:   4 r30:   0 r31:   0 
-x  :  20 y  :   4 z  :   1 
-Registers used: 19 out of 35 (54.3%)
+r0 :  17 r1 :  10 r2 :   0 r3 :   0 r4 :   0 r5 :   4 r6 :   0 r7 :   0 
+r8 :   0 r9 :   0 r10:   4 r11:   3 r12:   0 r13:   0 r14:   0 r15:   0 
+r16: 123 r17:  18 r18:   4 r19:   0 r20:   0 r21:   4 r22:  20 r23:   4 
+r24:   7 r25:   6 r26:  17 r27:  17 r28:   4 r29:   4 r30:   0 r31:   0 
+x  :  22 y  :   4 z  :   1 
+Registers used: 20 out of 35 (57.1%)
 
 ATmega8 instruction use summary:
-.lds  :   0 .sts  :   0 adc   :   3 add   :   3 adiw  :   8 and   :   0 
-andi  :   1 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 breq  :  21 brge  :   0 brhc  :   0 brhs  :   0 
-brid  :   0 brie  :   0 brlo  :   2 brlt  :   0 brmi  :   0 brne  :   3 
+.lds  :   0 .sts  :   0 adc   :   5 add   :   5 adiw  :   9 and   :   0 
+andi  :   2 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+brcc  :   0 brcs  :   0 breq  :  24 brge  :   0 brhc  :   0 brhs  :   0 
+brid  :   0 brie  :   0 brlo  :   2 brlt  :   0 brmi  :   0 brne  :   4 
 brpl  :   0 brsh  :   2 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
 bset  :   0 bst   :   0 cbi   :   6 cbr   :   0 clc   :   0 clh   :   0 
-cli   :   1 cln   :   0 clr   :  11 cls   :   0 clt   :   0 clv   :   0 
-clz   :   0 com   :   0 cp    :   1 cpc   :   4 cpi   :  12 cpse  :   0 
+cli   :   1 cln   :   0 clr   :  12 cls   :   0 clt   :   0 clv   :   0 
+clz   :   0 com   :   0 cp    :   1 cpc   :   4 cpi   :  15 cpse  :   0 
 dec   :  14 eor   :   0 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 
-ijmp  :   0 in    :   2 inc   :   6 ld    :   2 ldd   :   0 ldi   :  60 
-lds   :   9 lpm   :   1 lsl   :   1 lsr   :   0 mov   :   9 movw  :   0 
-mul   :   0 muls  :   0 mulsu :   0 neg   :   0 nop   :  12 or    :   0 
-ori   :   1 out   :  20 pop   :   7 push  :   6 rcall :   8 ret   :  12 
-reti  :   2 rjmp  :  30 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 
-sbi   :   8 sbic  :   0 sbis  :   3 sbiw  :   0 sbr   :   0 sbrc  :   2 
+ijmp  :   0 in    :   2 inc   :   9 ld    :   3 ldd   :   0 ldi   :  66 
+lds   :  14 lpm   :   1 lsl   :   1 lsr   :   0 mov   :  14 movw  :   0 
+mul   :   1 muls  :   0 mulsu :   0 neg   :   0 nop   :  12 or    :   0 
+ori   :   1 out   :  20 pop   :   9 push  :   8 rcall :   9 ret   :  13 
+reti  :   2 rjmp  :  37 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 
+sbi   :   8 sbic  :   0 sbis  :   3 sbiw  :   0 sbr   :   0 sbrc  :   3 
 sbrs  :   0 sec   :   0 seh   :   0 sei   :   1 sen   :   0 ser   :   2 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :  14 std   :   0 sts   :   6 sub   :   0 subi  :   0 swap  :   0 
+st    :  14 std   :   0 sts   :  10 sub   :   0 subi  :   0 swap  :   0 
 tst   :   0 wdr   :   0 
-Instructions used: 39 out of 110 (35.5%)
+Instructions used: 40 out of 110 (36.4%)
 
 ATmega8 memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0002b8    662      0    662    8192   8.1%
-[.dseg] 0x000060 0x000422      0      2      2    1024   0.2%
+[.cseg] 0x000000 0x000334    786      0    786    8192   9.6%
+[.dseg] 0x000060 0x000423      0      3      3    1024   0.3%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
 Assembly complete, 0 errors, 0 warnings
