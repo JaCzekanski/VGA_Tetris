@@ -12,7 +12,7 @@
 
 /* Main program  */
 
-	ldi r16, 230
+	ldi r16, 240
 	clr Xh
 	ldi Xl, 0x60
 
@@ -42,13 +42,13 @@ ClearLoop_:
 
 
 	ldi r16, 0b1
-	ldi Xl, LOW( 96 +(32*28) )
-	ldi Xh, HIGH( 96 +(32*28))
+	ldi Xl, LOW( 96 +(32*29) )
+	ldi Xh, HIGH( 96 +(32*29))
 	st X, r16
 
 	ldi r16, 0b10
-	ldi Xl, LOW( 96 +(32*28) +31)
-	ldi Xh, HIGH( 96 +(32*28)+31)
+	ldi Xl, LOW( 96 +(32*29) +31)
+	ldi Xh, HIGH( 96 +(32*29)+31)
 	st X, r16
 
 	ldi r16, 15

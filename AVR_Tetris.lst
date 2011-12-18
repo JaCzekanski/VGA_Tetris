@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Sun Dec 18 23:43:24 2011
+AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Mon Dec 19 00:17:20 2011
 
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1): Including file 'd:\app\Atmel\AVR Tools\AvrAssembler2\Appnotes\m8def.inc'
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(2): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\macros.asm'
@@ -1060,7 +1060,7 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(342): Including file 'D:\KubX\Dropbox\de
                  
                  /* Main program  */
                  
-00008f ee06      	ldi r16, 230
+00008f ef00      	ldi r16, 240
 000090 27bb      	clr Xh
 000091 e6a0      	ldi Xl, 0x60
                  
@@ -1090,13 +1090,13 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(342): Including file 'D:\KubX\Dropbox\de
                  
                  
 0000a1 e001      	ldi r16, 0b1
-0000a2 eea0      	ldi Xl, LOW( 96 +(32*28) )
-0000a3 e0b3      	ldi Xh, HIGH( 96 +(32*28))
+0000a2 e0a0      	ldi Xl, LOW( 96 +(32*29) )
+0000a3 e0b4      	ldi Xh, HIGH( 96 +(32*29))
 0000a4 930c      	st X, r16
                  
 0000a5 e002      	ldi r16, 0b10
-0000a6 efaf      	ldi Xl, LOW( 96 +(32*28) +31)
-0000a7 e0b3      	ldi Xh, HIGH( 96 +(32*28)+31)
+0000a6 e1af      	ldi Xl, LOW( 96 +(32*29) +31)
+0000a7 e0b4      	ldi Xh, HIGH( 96 +(32*29)+31)
 0000a8 930c      	st X, r16
                  
 0000a9 e00f      	ldi r16, 15
