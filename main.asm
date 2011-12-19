@@ -94,10 +94,12 @@ hor_loop_2:
 
 
 InfinityLoop:
+
 	WAIT_VSYNC:
 	cpi VSYNC, 0xff
 	brne WAIT_VSYNC
 	clr VSYNC
+
 
 	rcall PAD_GetState
 
@@ -148,8 +150,11 @@ InfinityLoop:
 
 		; And random new color
 
-		lds r16, block_color
-		inc r16
+		;lds r16, block_color
+		;inc r16
+		in r16, ADCL
+		in r17, ADCH
+		sts block_color, r16
 		andi r16, 0b111
 		breq random_inc
 random_inc_:
@@ -198,6 +203,8 @@ LimitBlockY_:
 
 		sts block_y, r16
 
+		sbrc r10, 4 ; Start
+		rcall ClearMap
 		sbrc r10, 0 ; Right
 		rcall MoveRight
 		sbrc r10, 1 ; Left
@@ -336,6 +343,38 @@ LimitBlockXr:
 
 
 rjmp InfinityLoop
+
+
+ClearMap:
+	ldi r16, 21
+	ldi Xl, LOW( 96+9 + 32*5 +1)
+	ldi Xh, HIGH( 96+9 + 32*5 +1)
+
+	ClearMapLoop:
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X, r0
+
+	adiw X, 20
+
+	dec r16            ; 1 clk
+	breq ClearMapLoop_    ; 1/2 clk
+	rjmp ClearMapLoop     ; 2 clk
+
+ClearMapLoop_:
+	sts block_y, r0
+
+	ret
 
 
 .include "Pad.asm"
