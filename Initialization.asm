@@ -11,6 +11,7 @@ out SPL, r16
 
 ; R0 is always 0
 clr r0
+clr r2
 
 ; R1 is always 0xff
 ser r16
@@ -25,14 +26,7 @@ rcall UART_init
 ; Initialize pad
 rcall PAD_init
 
-; Initialize ADC (for randomizing), PC5
-cbi DDRC, 5
-
-; AREF, ADC5
-ldi r16, 5
-out ADMUX, r16
-ldi r16, 0b11100101;(1<<ADEN)|(1<<ADSC)|(1<<ADIF)|(1<<ADPS0)
-out ADCSRA, r16
+rcall RANDOM_init
 
 ; Variables
 ldi r16, 0

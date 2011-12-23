@@ -12,22 +12,392 @@
 
 /* Main program  */
 
-	ldi r16, 240
-	clr Xh
-	ldi Xl, 0x60
+	rcall ClearScreen
+	rcall DebugDrawCorners
+	rcall DrawMap
 
-	ClearLoop:
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	dec r16            ; 1 clk
-	breq ClearLoop_    ; 1/2 clk
-	rjmp ClearLoop     ; 2 clk
+InfinityLoop:
+	cpi VSYNC, 0xff
+	brne InfinityLoop
+	clr VSYNC
 
-ClearLoop_:
 
-	; Set corners
+	; Input
+
+	rcall PAD_GetState
+
+
+	sbrc r10, 4 ; Start
+	rcall ClearMap
+	sbrc r10, 0 ; Right
+	rcall MoveRight
+	sbrc r10, 1 ; Left
+	rcall MoveLeft
+	sbrc r10, 2 ; Down
+	rcall MoveDown
+;	sbrc r10, 7 ; A
+	;rcall check_move_down
+	mov r11, r10
+
+
+	; 500ms between block moves
+	mov r16, r5
+	inc r16
+	cpi r16, 30
+	mov r5, r16
+	breq update_block
+
+	rjmp InfinityLoop
+
+	update_block:
+		mov r5, r0 ; reset counter
+
+	;; Check for collision below
+
+
+		push r0
+		push r1
+
+			lds r16, block_y
+			inc r16
+
+			ldi r17, 32
+
+			mul r16, r17
+
+			ldi Xl, LOW( 96+10 + (32*5) )
+			ldi Xh, HIGH( 96+10 + (32*5) )
+			add r0, Xl
+			adc r1, Xh
+
+
+			mov Xh, r1
+			mov Xl, r0
+
+		pop r1
+		pop r0
+
+
+
+			lds r16, block_x
+			ldi r17, 0
+			add Xl, r16
+			adc Xh, r17
+
+		ld r17, X
+		cp r17, r0
+
+		breq block_clear; We can go further
+
+	; Collision
+
+	; We just reset position
+
+	sts block_y, r0
+
+	ldi r16, 6
+	sts block_x, r16
+
+	; And random new color
+	rcall RANDOM_get
+
+	sts block_color, r16
+	andi r16, 0b111
+	breq random_inc
+
+	sts block_color, r16
+	rjmp MainLoop_Redraw
+
+random_inc:
+	inc r16
+	sts block_color, r16
+	rjmp MainLoop_Redraw
+
+block_clear:
+	ldi r16, 0
+	rcall SetBlock
+
+	lds r16, block_y
+	inc r16
+
+	cpi r16, 21
+	brsh LimitBlockY
+	sts block_y, r16
+	rjmp MainLoop_Redraw
+
+LimitBlockY:
+	ldi r16, 0
+	sts block_y, r16
+	rjmp MainLoop_Redraw
+	
+MainLoop_Redraw:
+	lds r16, block_color
+	rcall SetBlock
+
+rjmp InfinityLoop
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; r16 - color
+SetBlock:
+
+	push r16
+	lds r16, block_y
+		ldi Xl, LOW( 96+10 + (32*5) )
+		ldi Xh, HIGH( 96+10 + (32*5) )
+
+	cpi r16, 0
+	breq loop_SetBlock
+	
+	loop_SetBlock:
+
+		adiw X, 32
+
+		dec r16            ; 1 clk
+		breq loop_SetBlock_    ; 1/2 clk
+		rjmp loop_SetBlock     ; 2 clk
+
+	loop_SetBlock_:
+		lds r16, block_x
+		add Xl, r16
+		ldi r16, 0
+		adc Xh, r16
+		pop r16
+		st X, r16
+
+		ret
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MoveRight:
+		sbrs r11, 0 
+		rjmp MoveRight_Begin
+		ret
+
+MoveRight_Begin:
+
+	lds r16, block_x
+
+	cpi r16, 12
+	brne MoveRightContinue
+
+	ret
+
+MoveRightContinue:
+
+	ldi r16, 0  ; Delete prev block
+	rcall SetBlock
+
+	lds r16, block_x
+	inc r16
+	sts block_x, r16
+
+	lds r16, BLOCK_COLOR ; Set curr block
+	rcall SetBlock
+
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MoveLeft:
+		sbrs r11, 1 ; A
+		rjmp MoveLeft_Begin
+		ret
+
+MoveLeft_Begin:
+
+	lds r16, block_x
+	
+	cpi r16, 0
+	brne MoveLeftContinue
+
+	ret
+	
+MoveLeftContinue:
+	
+	ldi r16, 0  ; Delete prev block
+	rcall SetBlock
+
+	lds r16, block_x
+	dec r16
+	sts block_x, r16
+
+	lds r16, BLOCK_COLOR ; Set curr block
+	rcall SetBlock
+
+	ret
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+MoveDown:
+		;sbrs r11, 2 
+		rjmp MoveDown_Begin
+		ret
+
+MoveDown_Begin:
+
+	lds r16, block_y
+
+	cpi r16, 20
+	brne MoveDownContinue
+
+	ret
+
+MoveDownContinue:
+
+	ldi r16, 0  ; Delete prev block
+	rcall SetBlock
+
+	lds r16, block_y
+	inc r16
+	sts block_y, r16
+
+	lds r16, BLOCK_COLOR ; Set curr block
+	rcall SetBlock
+
+	ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+/*check_move_down:
+		sbrs r11, 7 ; A
+		rcall MoveDown
+		ret
+
+MoveDown:
+			push r0
+			push r1
+
+
+
+			lds r16, block_y
+			ldi r17, 32
+			mul r16, r17 ; 32*y ->r0:r1
+
+				ldi Xl, LOW( 96+10 + (32*5) )
+				ldi Xh, HIGH( 96+10 + (32*5) )
+				
+			add r0, Xl
+			adc r1, Xh
+
+
+			mov Xh, r1
+			mov Xl, r0
+
+			lds r16, block_x
+			ldi r17, 0
+			add Xl, r16
+			adc Xh, r17
+
+
+			;; We've got multipled y pos
+
+			ldi r18, 21
+			lds r16, block_y
+			sub r18, r16
+
+			MoveDown_loop:
+				adiw X, 32
+				ld r17, X
+
+				cpi r17, 0
+				brne MoveDownStop 
+
+		MoveDownStop_:
+				inc r16            ; 1 clk
+				cp r16, r19
+				breq MoveDown_loop_    ; 1/2 clk
+				rjmp MoveDown_loop     ; 2 clk
+
+			MoveDown_loop_:
+				pop r1
+				pop r0
+				ret
+
+			MoveDownStop:
+				push r16
+				clr r16
+				rcall SetBlock
+				pop r16
+				sts block_y, r16
+
+				lds r16, block_color
+				rcall SetBlock
+
+				ldi r16, 0
+				sts block_y, r16
+
+
+	ldi r16, 6
+	sts block_x, r16
+
+
+				rjmp MoveDown_loop_
+
+
+
+*/
+
+/*
+		DrawMap
+*/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+DrawMap:
+		ldi r16, 15
+		ldi Xl, LOW( 96+9 + 32*4 )
+		ldi Xh, HIGH( 96+9 + 32*4 )
+	hor_loop_1:
+
+		st X+, r1
+		dec r16            ; 1 clk
+		breq hor_loop_1_end    ; 1/2 clk
+		rjmp hor_loop_1     ; 2 clk
+
+	hor_loop_1_end:
+		ldi r16, 21
+		ldi Xl, LOW( 96+9 + 32*5 )
+		ldi Xh, HIGH( 96+9 + 32*5 )
+
+	ver_loop:
+
+		st X, r1
+		adiw X, 14
+		st X, r1
+		adiw X, 18
+
+		dec r16            ; 1 clk
+		breq ver_loop_end    ; 1/2 clk
+		rjmp ver_loop     ; 2 clk
+
+	ver_loop_end:
+
+		ldi r16, 15
+		ldi Xl, LOW( 96+9 + (32*26) )
+		ldi Xh, HIGH( 96+9 + (32*26) )
+	hor_loop_2:
+
+		st X+, r1
+
+		dec r16            ; 1 clk
+		breq DrawMap_    ; 1/2 clk
+		rjmp hor_loop_2     ; 2 clk
+
+DrawMap_:
+	ret
+
+
+/*
+		DebugDrawCorners
+*/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+DebugDrawCorners:
 	ldi r16, 0b1
 
 	ldi Xl, LOW( 96 )
@@ -51,300 +421,36 @@ ClearLoop_:
 	ldi Xh, HIGH( 96 +(32*29)+31)
 	st X, r16
 
-	ldi r16, 15
-	ldi Xl, LOW( 96+9 + 32*4 )
-	ldi Xh, HIGH( 96+9 + 32*4 )
-hor_loop_1:
+	ret
 
-	st X+, r1
+/*
+		ClearScreen
+*/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ClearScreen:
+	ldi r16, 240
+	clr Xh
+	ldi Xl, 0x60
 
+	ClearLoop:
+	st X+, r0
+	st X+, r0
+	st X+, r0
+	st X+, r0
 	dec r16            ; 1 clk
-	breq hor_loop_1_end    ; 1/2 clk
-	rjmp hor_loop_1     ; 2 clk
+	breq ClearLoop_    ; 1/2 clk
+	rjmp ClearLoop     ; 2 clk
 
-hor_loop_1_end:
-	ldi r16, 21
-	ldi Xl, LOW( 96+9 + 32*5 )
-	ldi Xh, HIGH( 96+9 + 32*5 )
-
-ver_loop:
-
-	st X, r1
-	adiw X, 14
-	st X, r1
-	adiw X, 18
-
-	dec r16            ; 1 clk
-	breq ver_loop_end    ; 1/2 clk
-	rjmp ver_loop     ; 2 clk
-
-ver_loop_end:
-
-	ldi r16, 15
-	ldi Xl, LOW( 96+9 + (32*26) )
-	ldi Xh, HIGH( 96+9 + (32*26) )
-hor_loop_2:
-
-	st X+, r1
-
-	dec r16            ; 1 clk
-	breq InfinityLoop    ; 1/2 clk
-	rjmp hor_loop_2     ; 2 clk
-
-
-
-InfinityLoop:
-
-	WAIT_VSYNC:
-	cpi VSYNC, 0xff
-	brne WAIT_VSYNC
-	clr VSYNC
-
-
-	rcall PAD_GetState
-
-	;out UDR, r10
-
-	mov r16, r5
-	inc r16
-	cpi r16, 5
-	mov r5, r16
-	breq update_block
-
-	rjmp update_block_
-
-	update_block:
-
-	;; Check, if there is another block in the wall :)
-
-	
-		lds r16, block_y
-		inc r16
-		ldi Xl, LOW( 96+10 + (32*5) )
-		ldi Xh, HIGH( 96+10 + (32*5) )
-
-
-	loop_check_for_block:
-
-		adiw X, 32
-
-		dec r16            ; 1 clk
-		breq loop_check_for_block_    ; 1/2 clk
-		rjmp loop_check_for_block     ; 2 clk
-
-	loop_check_for_block_:
-		lds r16, block_x
-		add Xl, r16
-		adc Xh, r0
-		ld r17, X
-
-		cp r17, r0
-		breq block_clear; We can go further
-
-		; We just reset position
-
-		mov r5, r0
-		clr r16
-		sts block_y, r16
-
-
-		; And random new color
-
-		;lds r16, block_color
-		;inc r16
-		in r16, ADCL
-		in r17, ADCH
-		sts block_color, r16
-		andi r16, 0b111
-		breq random_inc
-random_inc_:
-		sts block_color, r16
-
-		
-		clr r16
-
-		rjmp LimitBlockY_
-
-random_inc:
-	inc r16
-	rjmp random_inc_
-
-block_clear:
-	;; Clear previous position
-		lds r16, block_y
-		ldi Xl, LOW( 96+10 + (32*5) )
-		ldi Xh, HIGH( 96+10 + (32*5) )
-
-
-	loop_clear_block:
-
-		adiw X, 32
-
-		dec r16            ; 1 clk
-		breq loop_clear_block_    ; 1/2 clk
-		rjmp loop_clear_block     ; 2 clk
-
-	loop_clear_block_:
-		lds r16, block_x
-		add Xl, r16
-		adc Xh, r0
-		ldi r17, 0b000
-		st X, r17
-
-
-		mov r5, r0
-		lds r16, block_y
-		inc r16
-
-		cpi r16, 21
-		brsh LimitBlockY_branch
-
-LimitBlockY_:
-
-		sts block_y, r16
-
-		sbrc r10, 4 ; Start
-		rcall ClearMap
-		sbrc r10, 0 ; Right
-		rcall MoveRight
-		sbrc r10, 1 ; Left
-		rcall MoveLeft
-		sbrc r10, 7 ; A
-		rjmp check_move_down
-		ldi r16, 0x00
-		mov r11, r16
-
-		rjmp update_block_
-
-
-LimitBlockY_branch:
-	rjmp LimitBlockY
-
-MoveRight:
-	lds r16, block_x
-
-	cpi r16, 12
-	brne MoveRightContinue
-
+ClearLoop_:
 	ret
 
-MoveRightContinue:
-	inc r16
-	sts block_x, r16
-	ret
 
-MoveLeft:
-	lds r16, block_x
-	
-	cpi r16, 0
-	brne MoveLeftContinue
-
-	ret
-	
-MoveLeftContinue:
-	dec r16
-	sts block_x, r16
-	ret
-
-rcall_MoveDown:
-	rcall MoveDown
-	rjmp check_move_down_
-	
-check_move_down:
-
-		mov r16, r11
-		cpi r16, 0x00 ; Pressed, not continuosly
-		breq rcall_MoveDown
-check_move_down_:
-		ldi r16, 0xff
-		mov r11, r16
-		rjmp update_block_
-MoveDown:
-			push r0
-			push r1
-
-			lds r16, block_y
-			lds r17, 32
-			mul r16, r17 ; 32*y ->r0:r1
-
-				ldi Xl, LOW( 96+10 + (32*5) )
-				ldi Xh, HIGH( 96+10 + (32*5) )
-				
-			add r0, Xl
-			adc r1, Xh
-
-			lds r16, block_x
-			ldi r17, 0
-			add r0, r16
-			adc r1, r17
-
-			mov Xh, r1
-			mov Xl, r0
-
-			;; We've got multipled y pos
-
-			ldi r16, 0
-
-			MoveDown_loop:
-				adiw X, 32
-				ld r17, X
-
-				cpi r17, 0
-				brne MoveDownStop 
-
-		MoveDownStop_:
-				inc r16            ; 1 clk
-				cpi r16, 21
-				breq MoveDown_loop_    ; 1/2 clk
-				rjmp MoveDown_loop     ; 2 clk
-
-			MoveDown_loop_:
-				pop r1
-				pop r0
-				ret
-
-			MoveDownStop:
-				sts block_y, r16
-				rjmp MoveDown_loop_
-
-
-
-LimitBlockY:
-	ldi r16, 0
-	rjmp LimitBlockY_
-
-LimitBlockXr:
-	ldi r16, 12
-	sts block_x, r16
-	
-	update_block_:
-
-
-	lds r16, block_y
-		ldi Xl, LOW( 96+10 + (32*5) )
-		ldi Xh, HIGH( 96+10 + (32*5) )
-	
-
-	loop_draw_block:
-
-		adiw X, 32
-
-		dec r16            ; 1 clk
-		breq loop_draw_block_    ; 1/2 clk
-		rjmp loop_draw_block     ; 2 clk
-
-	loop_draw_block_:
-		lds r16, block_x
-		add Xl, r16
-		adc Xh, r0
-		lds r17, block_color
-		;ldi r17, 0b001
-		st X, r17
-
-
-rjmp InfinityLoop
-
-
+/*
+		ClearMap
+*/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ClearMap:
 	ldi r16, 21
 	ldi Xl, LOW( 96+9 + 32*5 +1)
@@ -376,7 +482,7 @@ ClearMapLoop_:
 
 	ret
 
-
+.include "Random.asm"
 .include "Pad.asm"
 .include "Uart.asm"
 

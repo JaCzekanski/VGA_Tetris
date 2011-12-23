@@ -166,7 +166,7 @@ DRAW_LINE:
 	
 		pop r22 ;2
 		out sreg, r22 ;1
-		out PORTC, r0 ;1	
+		out PORTC, r2 ;1	
 reti
 
 ; Video
