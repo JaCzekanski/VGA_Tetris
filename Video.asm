@@ -39,7 +39,7 @@ delay3:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; Cyke policzone, dziala
 	; HSP, 76 cycles
-	cbi PORTB, 2  ;2
+	cbi VIDEO_SYNC_PORT, VIDEO_HSYNC  ;2
 
 	inc LINEl  ;1
 	breq inc_lineh  ;1/2   if overflow
@@ -71,7 +71,7 @@ _line_ovf:
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; HBP, 36 cycles
-	sbi PORTB, 2  ;2
+	sbi VIDEO_SYNC_PORT, VIDEO_HSYNC  ;2
 
 	ldi r22, HIGH( 480 )  ;1
 	cpi LINEl, LOW( 480 ) ;1
@@ -101,12 +101,12 @@ DRAW_BLANK:
 	rjmp _VSYNC           ;2
 
 SET_VSYNC:
-	cbi PORTB, 1          ;2   
+	cbi VIDEO_SYNC_PORT, VIDEO_VSYNC          ;2   
 	ser VSYNC 
 	rjmp _VSYNC           ;2
 
 CLEAR_VSYNC:	
-	sbi PORTB, 1          ;2 
+	sbi VIDEO_SYNC_PORT, VIDEO_VSYNC          ;2 
 	clr VSYNC 
 	rjmp _VSYNC           ;2
 
@@ -177,20 +177,20 @@ VIDEO_init:
 	clr Yl
 
 	;RGB 
-	ldi r16, 0b000111
+	ldi r16, 0b001111
 	out DDRC, r16
 
 	; VSYNC HSYNC
-	ldi r16, 0b00000110
-	out DDRB, r16
+	sbi VIDEO_SYNC_DDR, VIDEO_HSYNC
+	sbi VIDEO_SYNC_DDR, VIDEO_VSYNC
 
 	; RGB
 	ldi r16, 0b110
 	out PORTC, r16
 
 	; HIGH, HSYNC, VSYNC
-	ldi r16, 0b000
-	out PORTB, r16
+	cbi VIDEO_SYNC_PORT, VIDEO_HSYNC
+	cbi VIDEO_SYNC_PORT, VIDEO_VSYNC
 
 
 	;;;;;;;;;;;;;;;;;

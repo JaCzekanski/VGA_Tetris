@@ -11,6 +11,11 @@
 .equ PAD_PIN=PIND
 .equ PAD_DDR=DDRD
 
+.equ VIDEO_SYNC_PORT = PORTD
+.equ VIDEO_SYNC_DDR = DDRD
+.equ VIDEO_HSYNC = 5
+.equ VIDEO_VSYNC = 6
+
 .def VSYNC=r23
 .def LINEl=r24
 .def LINEh=r25

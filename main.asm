@@ -21,7 +21,21 @@ InfinityLoop:
 	brne InfinityLoop
 	clr VSYNC
 
+	in r16, OCR2
+	cpi r16, 0xff
+	breq changeto0
 
+	ldi r16, 0xff
+	out OCR2, r16
+
+	rjmp asdasdasDAS
+
+	changeto0:
+	ldi r16, 0
+	out OCR2, r16
+
+
+asdasdasDAS:
 	; Input
 
 	rcall PAD_GetState
@@ -29,17 +43,23 @@ InfinityLoop:
 
 	sbrc r10, 4 ; Start
 	rcall ClearMap
+	sbrc r10, 5 ; Select
+	rcall RandomBlock
 	sbrc r10, 0 ; Right
 	rcall MoveRight
 	sbrc r10, 1 ; Left
 	rcall MoveLeft
 	sbrc r10, 2 ; Down
 	rcall MoveDown
-;	sbrc r10, 7 ; A
-	;rcall check_move_down
+	sbrc r10, 7 ; B
+	rcall RotateRight
+	sbrc r10, 6 ; A
+	rcall RotateLeft
+
 	mov r11, r10
 
 
+ 	clr r6 ;  No new frame
 	; 500ms between block moves
 	mov r16, r5
 	inc r16
@@ -50,12 +70,29 @@ InfinityLoop:
 	rjmp InfinityLoop
 
 	update_block:
+		mov r6, r1 ;  New frame
 		mov r5, r0 ; reset counter
 
-	;; Check for collision below
+		;; Check for collision below
+
+		ldi r16, 0
+		rcall SetBlock
+
+		lds r16, block_x
+		lds r17, block_y
+		inc r17
+
+		rcall check_collision
+
+		cpi r16, 0
+
+		breq block_clear; We can go further
 
 
-		push r0
+		lds r16, block_color
+		rcall SetBlock
+
+	/*	push r0
 		push r1
 
 			lds r16, block_y
@@ -87,7 +124,7 @@ InfinityLoop:
 		ld r17, X
 		cp r17, r0
 
-		breq block_clear; We can go further
+		breq block_clear; We can go further*/
 
 	; Collision
 
@@ -98,24 +135,38 @@ InfinityLoop:
 	ldi r16, 6
 	sts block_x, r16
 
+	sts block_rotation, r0
+
 	; And random new color
 	rcall RANDOM_get
 
-	sts block_color, r16
-	andi r16, 0b111
-	breq random_inc
+	cpi r16, 7
+	brsh LimitBlock
+
+	LimitBlock_:
+	sts block_type, r16
+
+	ldi Zl, LOW(2*COLORS)
+	ldi Zh, HIGH(2*COLORS)
+
+	add Zl, r16
+	adc Zh, r0
+
+	lpm r16, Z
 
 	sts block_color, r16
 	rjmp MainLoop_Redraw
 
-random_inc:
-	inc r16
-	sts block_color, r16
-	rjmp MainLoop_Redraw
+LimitBlock:
+andi r16, 0b111
+breq LimitBlock_dec
+rjmp LimitBlock_
+
+LimitBlock_dec:
+lsr r16
+rjmp LimitBlock_
 
 block_clear:
-	ldi r16, 0
-	rcall SetBlock
 
 	lds r16, block_y
 	inc r16
@@ -149,6 +200,89 @@ SetBlock:
 		ldi Xh, HIGH( 96+10 + (32*5) )
 
 	cpi r16, 0
+	breq loop_SetBlock_
+	
+	loop_SetBlock:
+
+		adiw X, 32
+
+		dec r16            ; 1 clk
+		breq loop_SetBlock_    ; 1/2 clk
+		rjmp loop_SetBlock     ; 2 clk
+
+	loop_SetBlock_:
+
+
+		lds r16, block_x
+		add Xl, r16
+		ldi r16, 0
+		adc Xh, r16
+		pop r16
+		
+
+		ldi Zl, LOW(2*BLOCK_START)
+		ldi Zh, HIGH(2*BLOCK_START)
+
+		lds r17, block_type
+		; block type * 16
+		; 4x line
+		lsl r17
+		lsl r17
+		lsl r17
+		lsl r17
+
+		
+		lds r18, block_rotation
+		lsl r18
+		lsl r18
+		add r17, r18
+
+		add Zl, r17
+		adc Zh, r0
+
+
+
+		ldi r17, 4
+	loop_DrawBlock:
+		lpm r18, Z+
+
+		sbrc r18, 3
+		rcall SetPixel
+		adiw X, 1
+
+		sbrc r18, 2
+		rcall SetPixel
+		adiw X, 1
+
+		sbrc r18, 1
+		rcall SetPixel
+		adiw X, 1
+
+		sbrc r18, 0
+		rcall SetPixel
+		
+		adiw X, 29
+
+		dec r17
+		breq SetBlock_End
+		rjmp loop_DrawBlock
+
+		SetBlock_End:
+		ret
+
+
+SetPixel:
+	st X, r16
+	ret
+	
+/*SetBlock:
+
+	push r16
+	lds r16, block_y
+		ldi Xl, LOW( 96+10 + (32*5) )
+		ldi Xh, HIGH( 96+10 + (32*5) )
+
+	cpi r16, 0
 	breq loop_SetBlock
 	
 	loop_SetBlock:
@@ -168,7 +302,109 @@ SetBlock:
 		st X, r16
 
 		ret
+*/
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+RandomBlock:
+		sbrs r11, 5
+		rjmp RandomBlock_Begin
+		ret
+
+RandomBlock_Begin:
+
+	ldi r16, 0
+	rcall SetBlock
+
+	; And random new color
+	rcall RANDOM_get
+
+	lds r16, block_type
+	inc r16
+
+	cpi r16, 7
+	brsh RandomBlock_Reset
+
+	RandomBlock_Continue:
+	sts block_type, r16
+	
+	ldi Zl, LOW(2*COLORS)
+	ldi Zh, HIGH(2*COLORS)
+
+	add Zl, r16
+	adc Zh, r0
+
+	lpm r16, Z
+
+	sts block_rotation, r0
+
+	sts block_color, r16
+	rcall SetBlock
+
+	ret
+
+RandomBlock_Reset:
+ldi r16, 0
+rjmp RandomBlock_Continue
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+RotateRight:
+		sbrs r11, 7
+		rjmp RotateRight_Begin
+		ret
+
+RotateRight_Begin:
+
+	ldi r16, 0
+	rcall SetBlock
+
+	lds r16, block_rotation
+	inc r16
+	cpi r16, 4
+	brsh RotateRight_Reset
+
+RotateRight_Continue:
+
+	sts block_rotation, r16
+
+	lds r16, block_color
+	rcall SetBlock
+	ret
+
+RotateRight_Reset:
+	ldi r16, 0
+	rjmp RotateRight_Continue
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+RotateLeft:
+		sbrs r11, 6
+		rjmp RotateLeft_Begin
+		ret
+
+RotateLeft_Begin:
+
+	ldi r16, 0
+	rcall SetBlock
+
+	lds r16, block_rotation
+	dec r16
+	cpi r16, 255
+	brsh RotateLeft_Reset
+
+RotateLeft_Continue:
+
+	sts block_rotation, r16
+
+	lds r16, block_color
+	rcall SetBlock
+	ret
+
+RotateLeft_Reset:
+	ldi r16, 3
+	rjmp RotateRight_Continue
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -180,17 +416,26 @@ MoveRight:
 
 MoveRight_Begin:
 
-	lds r16, block_x
+	ldi r16, 0
+	rcall SetBlock
 
-	cpi r16, 12
-	brne MoveRightContinue
+	lds r16, block_x
+	lds r17, block_y
+	inc r16
+
+	rcall check_collision
+
+
+	cpi r16, 0
+	breq MoveRightContinue
+
+
+	lds r16, BLOCK_COLOR ; Set curr block
+	rcall SetBlock
 
 	ret
 
 MoveRightContinue:
-
-	ldi r16, 0  ; Delete prev block
-	rcall SetBlock
 
 	lds r16, block_x
 	inc r16
@@ -210,10 +455,22 @@ MoveLeft:
 
 MoveLeft_Begin:
 
+	ldi r16, 0
+	rcall SetBlock
+
 	lds r16, block_x
-	
+	lds r17, block_y
+	dec r16
+
+	rcall check_collision
+
+
 	cpi r16, 0
-	brne MoveLeftContinue
+	breq MoveLeftContinue
+
+
+	lds r16, BLOCK_COLOR ; Set curr block
+	rcall SetBlock
 
 	ret
 	
@@ -239,19 +496,35 @@ MoveDown:
 		rjmp MoveDown_Begin
 		ret
 
+
 MoveDown_Begin:
 
-	lds r16, block_y
+	ldi r16, 0
+	rcall SetBlock
 
-	cpi r16, 20
-	brne MoveDownContinue
+	lds r16, block_x
+	lds r17, block_y
+	inc r17
+
+	rcall check_collision
+
+
+	cpi r16, 0
+	breq MoveDownContinue
+
+
+	lds r16, BLOCK_COLOR ; Set curr block
+	rcall SetBlock
+
+	ldi r16, 29
+	mov r5, r16
 
 	ret
 
 MoveDownContinue:
 
-	ldi r16, 0  ; Delete prev block
-	rcall SetBlock
+	;ldi r16, 0  ; Delete prev block
+	;rcall SetBlock
 
 	lds r16, block_y
 	inc r16
@@ -482,12 +755,157 @@ ClearMapLoop_:
 
 	ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; r16 - x, r17 - y
+check_collision:
+	push r0
+	push r1
+	mov r2, r0
+	ldi r18, 32
+	mul r18, r17
+	
+	ldi Xl, LOW( 96 + 9+ (5*32)+1 )
+	ldi Xh, HIGH( 96 + 9+ (5*32)+1 )
+
+	add r0, Xl
+	adc r1, Xh
+
+	add r0, r16
+	adc r1, r2
+
+
+	mov Xl, r0
+	mov Xh, r1
+
+	;; Flash pointer of block
+
+	pop r1
+	pop r0
+
+	ldi Zl, LOW(2*BLOCK_START)
+	ldi Zh, HIGH(2*BLOCK_START)
+
+	lds r17, block_type
+	; block type * 16
+	; 4x line
+	lsl r17
+	lsl r17
+	lsl r17
+	lsl r17
+
+	
+	lds r18, block_rotation
+	lsl r18
+	lsl r18
+	add r17, r18
+
+	add Zl, r17
+	adc Zh, r0
+
+	clr r19
+	;;; 
+	; Temporary version
+	;;;
+
+	; for (y;y<4;y++)
+	; for (x;x<4;x++)
+
+		ldi r17, 4
+	loop_CheckBlock:
+		lpm r18, Z+
+
+		sbrc r18, 3
+		rcall CheckPixel
+		adiw X, 1
+
+		sbrc r18, 2
+		rcall CheckPixel
+		adiw X, 1
+
+		sbrc r18, 1
+		rcall CheckPixel
+		adiw X, 1
+
+		sbrc r18, 0
+		rcall CheckPixel
+		
+		adiw X, 29
+
+		dec r17
+		breq CheckBlock_End
+		rjmp loop_CheckBlock
+
+		CheckBlock_End:
+		mov r16, r19
+		ret
+
+
+CheckPixel:
+	ld r16, X
+	cpi r16, 0x00
+
+	breq CheckPixel_no; no collision
+
+	; Collision
+	ldi r19, 0xff
+
+	ret
+
+CheckPixel_no:
+	ret
+
+/*check_collision:
+	push r0
+	push r1
+	mov r2, r0
+	ldi r18, 32
+	mul r18, r17
+	
+	ldi Xl, LOW( 96 + 9+ (5*32)+1 )
+	ldi Xh, HIGH( 96 + 9+ (5*32)+1 )
+
+	add r0, Xl
+	adc r1, Xh
+
+	add r0, r16
+	adc r1, r2
+
+
+	mov Xl, r0
+	mov Xh, r1
+
+	;;; 
+	; Temporary version
+	;;;
+
+	ld r17, X
+	tst r17
+	; if !0
+	brne set_collision
+	
+	clr r16
+
+check_collision_continue:
+	pop r1
+	pop r0
+	ret
+
+set_collision:
+	ser r16
+	rjmp check_collision_continue*/
+
+.include "blocks.asm"
+
 .include "Random.asm"
 .include "Pad.asm"
 .include "Uart.asm"
+
 
 .dseg
 .org SRAM_START+960
 block_y: .BYTE 1
 block_x: .BYTE 1
 block_color: .BYTE 1
+block_type: .BYTE 1
+block_rotation: .BYTE 1
