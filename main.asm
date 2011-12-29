@@ -43,8 +43,8 @@ asdasdasDAS:
 
 	sbrc r10, 4 ; Start
 	rcall ClearMap
-	sbrc r10, 5 ; Select
-	rcall RandomBlock
+	;sbrc r10, 5 ; Select
+	;rcall RandomBlock
 	sbrc r10, 0 ; Right
 	rcall MoveRight
 	sbrc r10, 1 ; Left
@@ -132,7 +132,7 @@ asdasdasDAS:
 
 	sts block_y, r0
 
-	ldi r16, 6
+	ldi r16, 5+X_DELTA
 	sts block_x, r16
 
 	sts block_rotation, r0
@@ -196,8 +196,8 @@ SetBlock:
 
 	push r16
 	lds r16, block_y
-		ldi Xl, LOW( 96+10 + (32*5) )
-		ldi Xh, HIGH( 96+10 + (32*5) )
+		ldi Xl, LOW( 96+10 + (32*5) - X_DELTA)
+		ldi Xh, HIGH( 96+10 + (32*5) - X_DELTA )
 
 	cpi r16, 0
 	breq loop_SetBlock_
@@ -361,6 +361,7 @@ RotateRight_Begin:
 	rcall SetBlock
 
 	lds r16, block_rotation
+	push r16
 	inc r16
 	cpi r16, 4
 	brsh RotateRight_Reset
@@ -369,6 +370,19 @@ RotateRight_Continue:
 
 	sts block_rotation, r16
 
+	
+	lds r16, block_x
+	lds r17, block_y
+	rcall check_collision
+
+	cpi r16, 0
+	pop r16
+
+	breq RotateRight_End
+
+	sts block_rotation, r16 ;prev rotation
+
+RotateRight_End:
 	lds r16, block_color
 	rcall SetBlock
 	ret
@@ -388,8 +402,9 @@ RotateLeft_Begin:
 
 	ldi r16, 0
 	rcall SetBlock
-
+	
 	lds r16, block_rotation
+	push r16
 	dec r16
 	cpi r16, 255
 	brsh RotateLeft_Reset
@@ -398,6 +413,18 @@ RotateLeft_Continue:
 
 	sts block_rotation, r16
 
+	
+	lds r16, block_x
+	lds r17, block_y
+	rcall check_collision
+
+	cpi r16, 0
+	pop r16
+	breq RotateLeft_End
+
+	sts block_rotation, r16 ;prev rotation
+
+RotateLeft_End:
 	lds r16, block_color
 	rcall SetBlock
 	ret
@@ -765,8 +792,8 @@ check_collision:
 	ldi r18, 32
 	mul r18, r17
 	
-	ldi Xl, LOW( 96 + 9+ (5*32)+1 )
-	ldi Xh, HIGH( 96 + 9+ (5*32)+1 )
+	ldi Xl, LOW( 96 + 9+ (5*32)+1  - X_DELTA)
+	ldi Xh, HIGH( 96 + 9+ (5*32)+1  - X_DELTA)
 
 	add r0, Xl
 	adc r1, Xh

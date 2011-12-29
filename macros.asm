@@ -16,6 +16,8 @@
 .equ VIDEO_HSYNC = 5
 .equ VIDEO_VSYNC = 6
 
+.equ X_DELTA = 4
+
 .def VSYNC=r23
 .def LINEl=r24
 .def LINEh=r25

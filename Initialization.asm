@@ -43,6 +43,7 @@ sbi DDRB, 3
 ; Variables
 ldi r16, 0
 sts block_y, r16
+ldi r16, 5+X_DELTA
 sts block_x, r16
 
 ldi r16,0b1
