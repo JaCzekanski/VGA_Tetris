@@ -1,5 +1,46 @@
 .org 0x13
+/*
+.MACRO DRAWTILE
 
+		ld Zl, Y+ ;2
+		mul Zl, r7 ;2
+		movw Z, r0 ;1
+		add Zl, r22 ;1
+		bld Zh, 4 ;1
+
+		lpm r21, Z+     ;3
+		out PORTC, r21  ;1
+		swap r21        ;1
+		out PORTC, r21  ;1
+
+		lpm r20, Z+     ;3
+		out PORTC, r20  ;1
+		swap r20        ;1
+		out PORTC, r20  ;1
+.ENDMACRO*/
+.MACRO DRAWTILE
+
+		ld Zl, Y+ ;2
+
+
+		mul Zl, r7 ;2
+		out PORTC, r20  ;1
+		movw Z, r0 ;1
+
+		swap r20        ;1
+
+		add Zl, r22 ;1
+		out PORTC, r20  ;1
+		bld Zh, 4 ;1
+
+		lpm r21, Z+     ;3
+		out PORTC, r21  ;1
+		swap r21        ;1
+
+		lpm r20, Z+     ;3
+		out PORTC, r21  ;1
+
+.ENDMACRO
 /*
  Main interrupt
 
@@ -66,7 +107,7 @@ line_ovf:
 _line_ovf:
 
 	mov r22, r16
-	delay200ns 15
+	delay200ns 14
 	mov r16, r22
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -130,7 +171,7 @@ DRAW_LINE:
 		rjmp _inc_pointer ;2
 
 	inc_pointer:
-		adiw Y, 32	  ;2
+		adiw Y, SCREEN_WIDTH	  ;2
 	_inc_pointer:
 
 		push Yl
@@ -138,35 +179,77 @@ DRAW_LINE:
 
 		;; Begining of SRAM
 		adiw Y, 0x30
-		adiw Y, 15
+		adiw Y, 15+6
+		
+		push Zl
+		push Zh
 
-		ldi r22, 32 ;;;;;;;;;;;;;;;;;;;;;; 33 !!!!!!!!!!!!!!!!
-	loop_blank: 
-		ld r21, Y+
-		out PORTC, r21
-		dec r22           ; 1 clk
-		nop
-		nop
-		nop
-		nop
+		push r20
 
-		breq loop_blank_end ; 1/2 clk
+		mov r22, LINEl
+		andi r22, 0b01100
+		lsr r22
+		;lsr r22
+		;andi r22, 0b0110
+				
+		ldi r20, 8
+		mov r7, r20
+		
+		SET
 
+		; Fix sharping
+		;nop
 		nop
 		nop
-		nop
-		nop
-		nop
-		rjmp loop_blank     ; 2 clk
+;;;;;;;;;;;;;;;;;
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	DRAWTILE
+	
+	DRAWTILE
+	DRAWTILE
+	;DRAWTILE
+	;DRAWTILE
+	
 
 
-	loop_blank_end:	
+		pop r20
+
+		pop Zh
+		pop Zl
+		out PORTC, r2 ;1	
+
 		pop Yh ;2
 		pop Yl ;2
 	
 		pop r22 ;2
 		out sreg, r22 ;1
-		out PORTC, r2 ;1	
 reti
 
 ; Video

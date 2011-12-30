@@ -1,5 +1,14 @@
 .include "m8def.inc"
 .include "macros.asm"
+
+.dseg
+.org SRAM_START+960
+block_y: .BYTE 1
+block_x: .BYTE 1
+block_color: .BYTE 1
+block_type: .BYTE 1
+block_rotation: .BYTE 1
+
 .cseg
 
 .org RESET
@@ -70,8 +79,8 @@ asdasdasDAS:
 	rjmp InfinityLoop
 
 	update_block:
-		mov r6, r1 ;  New frame
-		mov r5, r0 ; reset counter
+		mov r6, r3 ;  New frame
+		mov r5, r2 ; reset counter
 
 		;; Check for collision below
 
@@ -130,12 +139,12 @@ asdasdasDAS:
 
 	; We just reset position
 
-	sts block_y, r0
+	sts block_y, r2
 
 	ldi r16, 5+X_DELTA
 	sts block_x, r16
 
-	sts block_rotation, r0
+	sts block_rotation, r2
 
 	; And random new color
 	rcall RANDOM_get
@@ -150,7 +159,7 @@ asdasdasDAS:
 	ldi Zh, HIGH(2*COLORS)
 
 	add Zl, r16
-	adc Zh, r0
+	adc Zh, r2
 
 	lpm r16, Z
 
@@ -196,15 +205,15 @@ SetBlock:
 
 	push r16
 	lds r16, block_y
-		ldi Xl, LOW( 96+10 + (32*5) - X_DELTA)
-		ldi Xh, HIGH( 96+10 + (32*5) - X_DELTA )
+		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
+		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
 
 	cpi r16, 0
 	breq loop_SetBlock_
 	
 	loop_SetBlock:
 
-		adiw X, 32
+		adiw X, SCREEN_WIDTH
 
 		dec r16            ; 1 clk
 		breq loop_SetBlock_    ; 1/2 clk
@@ -238,7 +247,7 @@ SetBlock:
 		add r17, r18
 
 		add Zl, r17
-		adc Zh, r0
+		adc Zh, r2
 
 
 
@@ -261,7 +270,7 @@ SetBlock:
 		sbrc r18, 0
 		rcall SetPixel
 		
-		adiw X, 29
+		adiw X, SCREEN_WIDTH-3
 
 		dec r17
 		breq SetBlock_End
@@ -333,11 +342,11 @@ RandomBlock_Begin:
 	ldi Zh, HIGH(2*COLORS)
 
 	add Zl, r16
-	adc Zh, r0
+	adc Zh, r2
 
 	lpm r16, Z
 
-	sts block_rotation, r0
+	sts block_rotation, r2
 
 	sts block_color, r16
 	rcall SetBlock
@@ -650,26 +659,29 @@ MoveDown:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawMap:
 		ldi r16, 15
-		ldi Xl, LOW( 96+9 + 32*4 )
-		ldi Xh, HIGH( 96+9 + 32*4 )
+		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*4 )
+		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*4 )
+		ldi r17, 0x0f
 	hor_loop_1:
 
-		st X+, r1
+		st X+, r17
 		dec r16            ; 1 clk
 		breq hor_loop_1_end    ; 1/2 clk
 		rjmp hor_loop_1     ; 2 clk
 
 	hor_loop_1_end:
 		ldi r16, 21
-		ldi Xl, LOW( 96+9 + 32*5 )
-		ldi Xh, HIGH( 96+9 + 32*5 )
+		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 )
+		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 )
 
 	ver_loop:
 
-		st X, r1
+
+		st X, r17
 		adiw X, 14
-		st X, r1
-		adiw X, 18
+		st X, r17
+		adiw X, SCREEN_WIDTH-14
+
 
 		dec r16            ; 1 clk
 		breq ver_loop_end    ; 1/2 clk
@@ -678,11 +690,11 @@ DrawMap:
 	ver_loop_end:
 
 		ldi r16, 15
-		ldi Xl, LOW( 96+9 + (32*26) )
-		ldi Xh, HIGH( 96+9 + (32*26) )
+		ldi Xl, LOW( 96+MAP_X + (SCREEN_WIDTH*26) )
+		ldi Xh, HIGH( 96+MAP_X + (SCREEN_WIDTH*26) )
 	hor_loop_2:
 
-		st X+, r1
+		st X+, r17
 
 		dec r16            ; 1 clk
 		breq DrawMap_    ; 1/2 clk
@@ -706,19 +718,19 @@ DebugDrawCorners:
 
 
 	ldi r16, 0b10
-	ldi Xl, LOW( 96+31)
-	ldi Xh, HIGH( 96+31)
+	ldi Xl, LOW( 96+SCREEN_WIDTH-1)
+	ldi Xh, HIGH( 96+SCREEN_WIDTH-1)
 	st X, r16
 
 
 	ldi r16, 0b1
-	ldi Xl, LOW( 96 +(32*29) )
-	ldi Xh, HIGH( 96 +(32*29))
+	ldi Xl, LOW( 96 +(SCREEN_WIDTH*29) )
+	ldi Xh, HIGH( 96 +(SCREEN_WIDTH*29))
 	st X, r16
 
 	ldi r16, 0b10
-	ldi Xl, LOW( 96 +(32*29) +31)
-	ldi Xh, HIGH( 96 +(32*29)+31)
+	ldi Xl, LOW( 96 +(SCREEN_WIDTH*29) +SCREEN_WIDTH-1)
+	ldi Xh, HIGH( 96 +(SCREEN_WIDTH*29)+SCREEN_WIDTH-1)
 	st X, r16
 
 	ret
@@ -734,10 +746,10 @@ ClearScreen:
 	ldi Xl, 0x60
 
 	ClearLoop:
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
 	dec r16            ; 1 clk
 	breq ClearLoop_    ; 1/2 clk
 	rjmp ClearLoop     ; 2 clk
@@ -753,32 +765,33 @@ ClearLoop_:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ClearMap:
 	ldi r16, 21
-	ldi Xl, LOW( 96+9 + 32*5 +1)
-	ldi Xh, HIGH( 96+9 + 32*5 +1)
+	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
 
+	ldi r17, 0b0000
 	ClearMapLoop:
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X+, r0
-	st X, r0
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X+, r17
+	st X, r17
 
-	adiw X, 20
+	adiw X, SCREEN_WIDTH-12
 
 	dec r16            ; 1 clk
 	breq ClearMapLoop_    ; 1/2 clk
 	rjmp ClearMapLoop     ; 2 clk
 
 ClearMapLoop_:
-	sts block_y, r0
+	sts block_y, r2
 
 	ret
 
@@ -786,14 +799,11 @@ ClearMapLoop_:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; r16 - x, r17 - y
 check_collision:
-	push r0
-	push r1
-	mov r2, r0
-	ldi r18, 32
+	ldi r18, SCREEN_WIDTH
 	mul r18, r17
 	
-	ldi Xl, LOW( 96 + 9+ (5*32)+1  - X_DELTA)
-	ldi Xh, HIGH( 96 + 9+ (5*32)+1  - X_DELTA)
+	ldi Xl, LOW( 96 + MAP_X+ (5*SCREEN_WIDTH)+1  - X_DELTA)
+	ldi Xh, HIGH( 96 + MAP_X+ (5*SCREEN_WIDTH)+1  - X_DELTA)
 
 	add r0, Xl
 	adc r1, Xh
@@ -807,8 +817,6 @@ check_collision:
 
 	;; Flash pointer of block
 
-	pop r1
-	pop r0
 
 	ldi Zl, LOW(2*BLOCK_START)
 	ldi Zh, HIGH(2*BLOCK_START)
@@ -828,7 +836,7 @@ check_collision:
 	add r17, r18
 
 	add Zl, r17
-	adc Zh, r0
+	adc Zh, r2
 
 	clr r19
 	;;; 
@@ -857,7 +865,7 @@ check_collision:
 		sbrc r18, 0
 		rcall CheckPixel
 		
-		adiw X, 29
+		adiw X, SCREEN_WIDTH-3
 
 		dec r17
 		breq CheckBlock_End
@@ -922,17 +930,9 @@ set_collision:
 	ser r16
 	rjmp check_collision_continue*/
 
-.include "blocks.asm"
-
 .include "Random.asm"
 .include "Pad.asm"
 .include "Uart.asm"
 
+.include "blocks.asm"
 
-.dseg
-.org SRAM_START+960
-block_y: .BYTE 1
-block_x: .BYTE 1
-block_color: .BYTE 1
-block_type: .BYTE 1
-block_rotation: .BYTE 1

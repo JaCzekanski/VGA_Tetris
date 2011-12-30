@@ -18,6 +18,11 @@
 
 .equ X_DELTA = 4
 
+.equ SCREEN_WIDTH = 26
+.equ SCREEN_HEIGHT = 30
+
+.equ MAP_X = 5
+
 .def VSYNC=r23
 .def LINEl=r24
 .def LINEh=r25

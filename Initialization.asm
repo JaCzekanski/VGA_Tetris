@@ -9,13 +9,14 @@ out SPH, r16
 ldi r16, low(RAMEND)
 out SPL, r16
 
-; R0 is always 0
-clr r0
+; Because r0:r1 is used in multiplication
+
+; R2 is always 0
 clr r2
 
-; R1 is always 0xff
+; R3 is always 0xff
 ser r16
-mov r1, r16
+mov r3, r16
 
 
 ; Init UART at 57600bps
