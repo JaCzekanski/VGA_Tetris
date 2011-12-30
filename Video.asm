@@ -1,23 +1,4 @@
 .org 0x13
-/*
-.MACRO DRAWTILE
-
-		ld Zl, Y+ ;2
-		mul Zl, r7 ;2
-		movw Z, r0 ;1
-		add Zl, r22 ;1
-		bld Zh, 4 ;1
-
-		lpm r21, Z+     ;3
-		out PORTC, r21  ;1
-		swap r21        ;1
-		out PORTC, r21  ;1
-
-		lpm r20, Z+     ;3
-		out PORTC, r20  ;1
-		swap r20        ;1
-		out PORTC, r20  ;1
-.ENDMACRO*/
 .MACRO DRAWTILE
 
 		ld Zl, Y+ ;2
@@ -189,8 +170,6 @@ DRAW_LINE:
 		mov r22, LINEl
 		andi r22, 0b01100
 		lsr r22
-		;lsr r22
-		;andi r22, 0b0110
 				
 		ldi r20, 8
 		mov r7, r20
@@ -198,7 +177,6 @@ DRAW_LINE:
 		SET
 
 		; Fix sharping
-		;nop
 		nop
 		nop
 ;;;;;;;;;;;;;;;;;
@@ -234,8 +212,6 @@ DRAW_LINE:
 	
 	DRAWTILE
 	DRAWTILE
-	;DRAWTILE
-	;DRAWTILE
 	
 
 

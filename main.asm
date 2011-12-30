@@ -8,6 +8,7 @@ block_x: .BYTE 1
 block_color: .BYTE 1
 block_type: .BYTE 1
 block_rotation: .BYTE 1
+score: .WORD 2
 
 .cseg
 
@@ -101,41 +102,9 @@ asdasdasDAS:
 		lds r16, block_color
 		rcall SetBlock
 
-	/*	push r0
-		push r1
-
-			lds r16, block_y
-			inc r16
-
-			ldi r17, 32
-
-			mul r16, r17
-
-			ldi Xl, LOW( 96+10 + (32*5) )
-			ldi Xh, HIGH( 96+10 + (32*5) )
-			add r0, Xl
-			adc r1, Xh
-
-
-			mov Xh, r1
-			mov Xl, r0
-
-		pop r1
-		pop r0
-
-
-
-			lds r16, block_x
-			ldi r17, 0
-			add Xl, r16
-			adc Xh, r17
-
-		ld r17, X
-		cp r17, r0
-
-		breq block_clear; We can go further*/
-
 	; Collision
+
+	; Check for full lines
 
 	; We just reset position
 
@@ -283,79 +252,6 @@ SetBlock:
 SetPixel:
 	st X, r16
 	ret
-	
-/*SetBlock:
-
-	push r16
-	lds r16, block_y
-		ldi Xl, LOW( 96+10 + (32*5) )
-		ldi Xh, HIGH( 96+10 + (32*5) )
-
-	cpi r16, 0
-	breq loop_SetBlock
-	
-	loop_SetBlock:
-
-		adiw X, 32
-
-		dec r16            ; 1 clk
-		breq loop_SetBlock_    ; 1/2 clk
-		rjmp loop_SetBlock     ; 2 clk
-
-	loop_SetBlock_:
-		lds r16, block_x
-		add Xl, r16
-		ldi r16, 0
-		adc Xh, r16
-		pop r16
-		st X, r16
-
-		ret
-*/
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-RandomBlock:
-		sbrs r11, 5
-		rjmp RandomBlock_Begin
-		ret
-
-RandomBlock_Begin:
-
-	ldi r16, 0
-	rcall SetBlock
-
-	; And random new color
-	rcall RANDOM_get
-
-	lds r16, block_type
-	inc r16
-
-	cpi r16, 7
-	brsh RandomBlock_Reset
-
-	RandomBlock_Continue:
-	sts block_type, r16
-	
-	ldi Zl, LOW(2*COLORS)
-	ldi Zh, HIGH(2*COLORS)
-
-	add Zl, r16
-	adc Zh, r2
-
-	lpm r16, Z
-
-	sts block_rotation, r2
-
-	sts block_color, r16
-	rcall SetBlock
-
-	ret
-
-RandomBlock_Reset:
-ldi r16, 0
-rjmp RandomBlock_Continue
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -559,9 +455,6 @@ MoveDown_Begin:
 
 MoveDownContinue:
 
-	;ldi r16, 0  ; Delete prev block
-	;rcall SetBlock
-
 	lds r16, block_y
 	inc r16
 	sts block_y, r16
@@ -570,87 +463,6 @@ MoveDownContinue:
 	rcall SetBlock
 
 	ret
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-/*check_move_down:
-		sbrs r11, 7 ; A
-		rcall MoveDown
-		ret
-
-MoveDown:
-			push r0
-			push r1
-
-
-
-			lds r16, block_y
-			ldi r17, 32
-			mul r16, r17 ; 32*y ->r0:r1
-
-				ldi Xl, LOW( 96+10 + (32*5) )
-				ldi Xh, HIGH( 96+10 + (32*5) )
-				
-			add r0, Xl
-			adc r1, Xh
-
-
-			mov Xh, r1
-			mov Xl, r0
-
-			lds r16, block_x
-			ldi r17, 0
-			add Xl, r16
-			adc Xh, r17
-
-
-			;; We've got multipled y pos
-
-			ldi r18, 21
-			lds r16, block_y
-			sub r18, r16
-
-			MoveDown_loop:
-				adiw X, 32
-				ld r17, X
-
-				cpi r17, 0
-				brne MoveDownStop 
-
-		MoveDownStop_:
-				inc r16            ; 1 clk
-				cp r16, r19
-				breq MoveDown_loop_    ; 1/2 clk
-				rjmp MoveDown_loop     ; 2 clk
-
-			MoveDown_loop_:
-				pop r1
-				pop r0
-				ret
-
-			MoveDownStop:
-				push r16
-				clr r16
-				rcall SetBlock
-				pop r16
-				sts block_y, r16
-
-				lds r16, block_color
-				rcall SetBlock
-
-				ldi r16, 0
-				sts block_y, r16
-
-
-	ldi r16, 6
-	sts block_x, r16
-
-
-				rjmp MoveDown_loop_
-
-
-
-*/
 
 /*
 		DrawMap
@@ -839,9 +651,6 @@ check_collision:
 	adc Zh, r2
 
 	clr r19
-	;;; 
-	; Temporary version
-	;;;
 
 	; for (y;y<4;y++)
 	; for (x;x<4;x++)
@@ -889,46 +698,6 @@ CheckPixel:
 
 CheckPixel_no:
 	ret
-
-/*check_collision:
-	push r0
-	push r1
-	mov r2, r0
-	ldi r18, 32
-	mul r18, r17
-	
-	ldi Xl, LOW( 96 + 9+ (5*32)+1 )
-	ldi Xh, HIGH( 96 + 9+ (5*32)+1 )
-
-	add r0, Xl
-	adc r1, Xh
-
-	add r0, r16
-	adc r1, r2
-
-
-	mov Xl, r0
-	mov Xh, r1
-
-	;;; 
-	; Temporary version
-	;;;
-
-	ld r17, X
-	tst r17
-	; if !0
-	brne set_collision
-	
-	clr r16
-
-check_collision_continue:
-	pop r1
-	pop r0
-	ret
-
-set_collision:
-	ser r16
-	rjmp check_collision_continue*/
 
 .include "Random.asm"
 .include "Pad.asm"

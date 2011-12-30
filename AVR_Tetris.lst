@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Fri Dec 30 01:04:32 2011
+AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Fri Dec 30 01:25:54 2011
 
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1): Including file 'd:\app\Atmel\AVR Tools\AvrAssembler2\Appnotes\m8def.inc'
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(2): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\macros.asm'
@@ -2584,22 +2584,22 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(937): Including file 'D:\KubX\Dropbox\de
                  ;X
                  ;X
                  .DB \
-                  0b0001, \
-                  0b0001, \
-0003ef 0101       0b0001, \
-                  0b0001, \
+                  0b0010,\
+                  0b0010,\
+0003ef 0202       0b0010,\
+                  0b0010,\
                  \
-0003f0 0101       0b1111, \
+0003f0 0202       0b1111, \
                   0b0000, \
 0003f1 000f       0b0000, \
                   0b0000, \
                  \
-0003f2 0000       0b0001, \
-                  0b0001, \
-0003f3 0101       0b0001, \
-                  0b0001, \
+0003f2 0000       0b0010,\
+                  0b0010,\
+0003f3 0202       0b0010,\
+                  0b0010,\
                  \
-0003f4 0101       0b1111, \
+0003f4 0202       0b1111, \
                   0b0000, \
 0003f5 000f       0b0000, \
 0003f6 0000       0b0000
@@ -2769,90 +2769,151 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(937): 'D:\KubX\Dropbox\dev\AVR_Tetris\bl
 000806 0119
 000807 0001          0x01, 0x00
                  
-                 .DB 0x22, 0x22,\
-000808 2222          0x22, 0x22,\
-000809 2222          0x22, 0x22,\
-00080a 2222
-00080b 2222          0x22, 0x22
+                 .DB 0xaa, 0x2a,\
+000808 2aaa          0x2a, 0x02,\
+000809 022a          0x2a, 0x02,\
+00080a 022a
+00080b 0002          0x02, 0x00
                  
                  
-                 .DB 0x21, 0x43,\
-00080c 4321          0x65, 0x87,\
-00080d 8765          0xA9, 0xCB,\
-00080e cba9
-00080f 21ed          0xED, 0x21
+                 .DB 0xbb, 0x3b,\
+00080c 3bbb          0x3b, 0x03,\
+00080d 033b          0x3b, 0x03,\
+00080e 033b
+00080f 0003          0x03, 0x00
                  
+                 .DB 0xcc, 0x4c,\
+000810 4ccc          0x4c, 0x04,\
+000811 044c          0x4c, 0x04,\
+000812 044c
+000813 0004          0x04, 0x00
+                 
+                 .DB 0xdd, 0x5d,\
+000814 5ddd          0x5d, 0x05,\
+000815 055d          0x5d, 0x05,\
+000816 055d
+000817 0005          0x05, 0x00
+                 
+                 .DB 0xee,0x6e,\
+000818 6eee          0x6e, 0x06,\
+000819 066e          0x6e, 0x06,\
+00081a 066e
+00081b 0006          0x06, 0x00
+                 
+                 .DB 0x77, 0x7f,\
+00081c 7f77          0x7f, 0x07,\
+00081d 077f          0x7f, 0x07,\
+00081e 077f
+00081f 0007          0x07, 0x00
+                 
+                 .DB 0x99, 0x19,\
+000820 1999          0x19, 0x01,\
+000821 0119          0x19, 0x01,\
+000822 0119
+000823 0001          0x01, 0x00
+                 
+                 .DB 0xaa, 0x2a,\
+000824 2aaa          0x2a, 0x02,\
+000825 022a          0x2a, 0x02,\
+000826 022a
+000827 0002          0x02, 0x00
+                 
+                 
+                 .DB 0xbb, 0x3b,\
+000828 3bbb          0x3b, 0x03,\
+000829 033b          0x3b, 0x03,\
+00082a 033b
+00082b 0003          0x03, 0x00
+                 
+                 .DB 0xcc, 0x4c,\
+00082c 4ccc          0x4c, 0x04,\
+00082d 044c          0x4c, 0x04,\
+00082e 044c
+00082f 0004          0x04, 0x00
+                 
+                 .DB 0xdd, 0x5d,\
+000830 5ddd          0x5d, 0x05,\
+000831 055d          0x5d, 0x05,\
+000832 055d
+000833 0005          0x05, 0x00
+                 
+                 .DB 0xee,0x6e,\
+000834 6eee          0x6e, 0x06,\
+000835 066e          0x6e, 0x06,\
+000836 066e
+000837 0006          0x06, 0x00
+                 
+                 .DB 0x77, 0x7f,\
+000838 7f77          0x7f, 0x07,\
+000839 077f          0x7f, 0x07,\
+00083a 077f
+00083b 0007          0x07, 0x00
+                 
+                 .DB 0xFF, 0x7F,\
+00083c 7fff          0x7F, 0x07,\
+00083d 077f          0x7F, 0x07,\
+00083e 077f
+00083f 000f          0x0F, 0x00
+                 /*
                  .DB 0x44, 0x44,\
-000810 4444          0x44, 0x44,\
-000811 4444          0x44, 0x44,\
-000812 4444
-000813 4444          0x44, 0x44
+                     0x44, 0x44,\
+                     0x44, 0x44,\
+                     0x44, 0x44
                  
                  .DB 0x55, 0x55,\
-000814 5555          0x55, 0x55,\
-000815 5555          0x55, 0x55,\
-000816 5555
-000817 5555          0x55, 0x55
+                     0x55, 0x55,\
+                     0x55, 0x55,\
+                     0x55, 0x55
                  
                  .DB 0x66, 0x66,\
-000818 6666          0x66, 0x66,\
-000819 6666          0x66, 0x66,\
-00081a 6666
-00081b 6666          0x66, 0x66
+                     0x66, 0x66,\
+                     0x66, 0x66,\
+                     0x66, 0x66
                  
                  	.DB 0x77, 0x77,\
-00081c 7777          0x77, 0x77,\
-00081d 7777          0x77, 0x77,\
-00081e 7777
-00081f 7777          0x77, 0x77
+                     0x77, 0x77,\
+                     0x77, 0x77,\
+                     0x77, 0x77
                  
                  	.DB 0x88, 0x88,\
-000820 8888          0x88, 0x88,\
-000821 8888          0x88, 0x88,\
-000822 8888
-000823 8888          0x88, 0x88
+                     0x88, 0x88,\
+                     0x88, 0x88,\
+                     0x88, 0x88
                  
                  	.DB 0x99, 0x99,\
-000824 9999          0x99, 0x99,\
-000825 9999          0x99, 0x99,\
-000826 9999
-000827 9999          0x99, 0x99
+                     0x99, 0x99,\
+                     0x99, 0x99,\
+                     0x99, 0x99
                  
                  .DB 0xAA, 0xAA,\
-000828 aaaa          0xAA, 0xAA,\
-000829 aaaa          0xAA, 0xAA,\
-00082a aaaa
-00082b aaaa          0xAA, 0xAA
+                     0xAA, 0xAA,\
+                     0xAA, 0xAA,\
+                     0xAA, 0xAA
                  
                  	.DB 0xBB, 0xBB,\
-00082c bbbb          0xBB, 0xBB,\
-00082d bbbb          0xBB, 0xBB,\
-00082e bbbb
-00082f bbbb          0xBB, 0xBB
+                     0xBB, 0xBB,\
+                     0xBB, 0xBB,\
+                     0xBB, 0xBB
                  
                  	.DB 0xCC, 0xCC,\
-000830 cccc          0xCC, 0xCC,\
-000831 cccc          0xCC, 0xCC,\
-000832 cccc
-000833 cccc          0xCC, 0xCC
+                     0xCC, 0xCC,\
+                     0xCC, 0xCC,\
+                     0xCC, 0xCC
                  
                  	.DB 0xDD, 0xDD,\
-000834 dddd          0xDD, 0xDD,\
-000835 dddd          0xDD, 0xDD,\
-000836 dddd
-000837 dddd          0xDD, 0xDD
+                     0xDD, 0xDD,\
+                     0xDD, 0xDD,\
+                     0xDD, 0xDD
                  
                  	.DB 0xEE, 0xEE,\
-000838 eeee          0xEE, 0xEE,\
-000839 eeee          0xEE, 0xEE,\
-00083a eeee
-00083b eeee          0xEE, 0xEE
+                     0xEE, 0xEE,\
+                     0xEE, 0xEE,\
+                     0xEE, 0xEE
                  
                  	.DB 0xFF, 0xFF,\
-00083c ffff          0xFF, 0xFF,\
-00083d ffff          0xFF, 0xFF,\
-00083e ffff
-00083f ffff          0xFF, 0xFF
+                     0xFF, 0xFF,\
+                     0xFF, 0xFF,\
+                     0xFF, 0xFF*/
                  
 
 
