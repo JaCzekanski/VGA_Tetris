@@ -9,7 +9,11 @@ block_color: .BYTE 1
 block_type: .BYTE 1
 block_rotation: .BYTE 1
 pause: .BYTE 1
-;score: .WORD 2
+gameover: .BYTE 1
+score: .BYTE 1
+lines: .BYTE 1
+level: .BYTE 1
+next: .BYTE 1
 
 .cseg
 
@@ -21,18 +25,60 @@ pause: .BYTE 1
 .include "Video.asm"
 .include "Initialization.asm"
 
+
 /* Main program  */
+PROGRAM_START:
+	rcall DrawSplashScreen
+	Splash_loop:
+	cpi VSYNC, 0xff
+	brne Splash_loop
+	clr VSYNC
+
+	rcall PAD_GetState
+	sbrc r10, 4 ; Start
+	rjmp StartGame
+	sbrc r10, 6 ; Highscores
+	rcall Highscores
+
+	rjmp Splash_loop
+
+StartGame:
 
 	rcall ClearScreen
 	rcall DebugDrawCorners
 	rcall DrawMap
+
+	mov r11, r10
+
+	; Variables
+	ldi r16, 6
+	sts block_y, r16
+	ldi r16, 5+X_DELTA
+	sts block_x, r16
+
+	ldi r16,0b1
+	sts block_color, r16
+	ldi r16, 1
+	sts block_type, r16
+
+	sts pause, r2
+	sts gameover, r2
+	sts SCORE, r2
+	sts lines, r2
+	sts level, r2
+
+	rcall RANDOM_block
+	sts block_type, r16
+
+	rcall RANDOM_block
+	sts next, r16
 
 InfinityLoop:
 	cpi VSYNC, 0xff
 	brne InfinityLoop
 	clr VSYNC
 
-	in r16, OCR2
+	/*in r16, OCR2
 	cpi r16, 0xff
 	breq changeto0
 
@@ -46,16 +92,23 @@ InfinityLoop:
 	out OCR2, r16
 
 
-asdasdasDAS:
+asdasdasDAS:*/
 	; Input
 
 	rcall PAD_GetState
 
+	sbrc r10, 5 ; Select
+	rcall PROGRAM_START
 
 	sbrc r10, 4 ; Start
-	rcall ClearMap
+	rcall PauseGame
 	;sbrc r10, 5 ; Select
 	;rcall RandomBlock
+
+	lds r16, pause
+	cpi r16, 0xff
+	breq omnitinput
+
 	sbrc r10, 0 ; Right
 	rcall MoveRight
 	sbrc r10, 1 ; Left
@@ -67,14 +120,12 @@ asdasdasDAS:
 	sbrc r10, 6 ; A
 	rcall RotateLeft
 
+omnitinput:
 	mov r11, r10
-
-	lds r16, pause
-	cpi r16, 0xff
-	breq InfinityLoop
 
  	clr r6 ;  No new frame
 	; 500ms between block moves
+
 	mov r16, r5
 	inc r16
 	cpi r16, 30
@@ -84,6 +135,11 @@ asdasdasDAS:
 	rjmp InfinityLoop
 
 	update_block:
+	
+		lds r16, pause
+		cpi r16, 0
+		brne MainLoop_Redraw_tramp
+
 		mov r6, r3 ;  New frame
 		mov r5, r2 ; reset counter
 
@@ -103,6 +159,9 @@ asdasdasDAS:
 		breq block_clear_tramp; We can go further
 		rjmp block_clear_tramp_
 
+MainLoop_Redraw_tramp:
+ 	rjmp MainLoop_Redraw
+
 block_clear_tramp:
 	rjmp block_clear
 
@@ -118,6 +177,7 @@ block_clear_tramp_:
 	;for (int y=0; y<20; y++)
 
 		ldi r17, 0
+		clr r13 ; line count
 
 		loop_check_map:
 			push r17
@@ -131,11 +191,15 @@ block_clear_tramp_:
 
 			inc r17
 			cpi r17, 21
-			breq loop_check_map_end
+			breq loop_check_map_end_tramp
 			rjmp loop_check_map
+
+loop_check_map_end_tramp:
+rjmp loop_check_map_end_
 
 	check_map_linefull:
 	push r17
+	inc r13
 
 	mov r16, r17
 
@@ -150,13 +214,84 @@ linefull_loop:
 	rjmp linefull_loop
 linefull_end:
 	pop r17
-	rjmp loop_check_map_continue
+
 	
+	lds r16, lines
+	inc r16
+	sts lines, r16
+	rjmp loop_check_map_continue
+
+			add_single:
+			lds r16, score
+
+			ldi r17, 5
+			add r16, r17
+
+			sts score, r16
+			rjmp loop_check_map_end
 
 
-	loop_check_map_end:
+			add_double:
+			lds r16, score
 
+			ldi r17, 5
+			add r16, r17
+
+			sts score, r16
+			rjmp loop_check_map_end
+
+
+			add_triple:
+			lds r16, score
+
+			ldi r17, 5
+			add r16, r17
+
+			sts score, r16
+			rjmp loop_check_map_end
+
+
+			add_tetris:
+			lds r16, score
+
+			ldi r17, 5
+			add r16, r17
+
+			sts score, r16
+			rjmp loop_check_map_end
+
+level_up:
+	lds r16, level
+	inc r16
+	sts level, r16
+
+loop_check_map_end_:
+mov r16, r13
+cpi r16, 0
+breq loop_check_map_end
+cpi r16, 1
+breq add_single
+cpi r16, 2
+breq add_double
+cpi r16, 3
+breq add_triple
+cpi r16, 4
+breq add_tetris
+
+lds r16, lines
+cpi r16, 0
+breq loop_check_map_end
+ldi r17, 30
+rcall divide
+cpi r17, 0
+breq level_up
+
+loop_check_map_end:
 	; We just reset position
+
+	lds r16, SCORE
+	inc r16
+	sts SCORE, r16
 
 	sts block_y, r2
 
@@ -165,14 +300,12 @@ linefull_end:
 
 	sts block_rotation, r2
 
-	; And random new color
-	rcall RANDOM_get
-
-	cpi r16, 7
-	brsh LimitBlock
-
-	LimitBlock_:
+	lds r16, next
 	sts block_type, r16
+
+	rcall RANDOM_block
+	sts next, r16
+
 
 	ldi Zl, LOW(2*COLORS)
 	ldi Zh, HIGH(2*COLORS)
@@ -191,28 +324,16 @@ linefull_end:
 	inc r17
 	rcall check_collision
 	cpi r16, 0xff
-	breq GameOver
+	breq _GameOver
 
 	rjmp MainLoop_Redraw
 
 
-GameOver:
+_GameOver:
 ;rcall ClearScreen
 sts pause, r3
+sts gameover, r3
 rjmp InfinityLoop
-
-LimitBlock:
-mov r17, r16
-rol r17
-eor r16, r17
-andi r16, 0b111
-cpi r16, 7
-breq LimitBlock_dec
-rjmp LimitBlock_
-
-LimitBlock_dec:
-dec r16
-rjmp LimitBlock_
 
 block_clear:
 
@@ -230,8 +351,118 @@ LimitBlockY:
 	rjmp MainLoop_Redraw
 	
 MainLoop_Redraw:
+
 	lds r16, block_color
 	rcall SetBlock
+
+	lds r16, gameover
+	cpi r16, 0xff
+	breq DrawGameover
+
+	lds r16, pause
+	cpi r16, 0xff
+	breq DrawPause
+	brne DrawEmpty
+	
+DrawPause:
+
+	ldi Zl, LOW(stringPauza*2)
+	ldi Zh, HIGH(stringPauza*2)
+
+	rjmp drawstrings_Cont
+DrawEmpty:
+	ldi Zl, LOW(stringEmpty*2)
+	ldi Zh, HIGH(stringEmpty*2)
+	rjmp drawstrings_Cont
+	
+	DrawGameover:
+	ldi Zl, LOW(stringGameover*2)
+	ldi Zh, HIGH(stringGameover*2)
+
+drawstrings_Cont:
+	ldi r16, 10
+	ldi r17, 2
+	rcall DrawString
+
+
+	ldi r16, 18
+	ldi r17, 4
+	ldi Zl, LOW(stringWynik*2)
+	ldi Zh, HIGH(stringWynik*2)
+	rcall DrawString
+
+
+	ldi r16, 24
+	ldi r17, 6
+	lds r18, SCORE
+	rcall DrawNumber
+
+	ldi r16, 18
+	ldi r17, 8
+	ldi Zl, LOW(stringLinie*2)
+	ldi Zh, HIGH(stringLinie*2)
+	rcall DrawString
+
+	ldi r16, 24
+	ldi r17, 10
+	lds r18, lines
+	rcall DrawNumber
+	
+
+	ldi r16, 17
+	ldi r17, 13
+	ldi Zl, LOW(stringNastepny*2)
+	ldi Zh, HIGH(stringNastepny*2)
+
+	rcall DrawString
+
+	lds r16, block_x
+	lds r17, block_y
+	lds r18, block_type
+	lds r19, block_rotation
+
+	push r16
+	push r17
+	push r18
+	push r19
+
+	ldi r16, 20
+	ldi r17, 12
+	ldi r19, 0
+
+	sts block_rotation, r19
+	sts block_type, r18
+	sts block_y, r17
+	sts block_x, r16
+
+	rcall ClearBlock
+
+	lds r18, next
+	sts block_type, r18
+
+	rcall SetBlock
+
+	pop r19
+	pop r18
+	pop r17
+	pop r16
+
+	sts block_rotation, r19
+	sts block_type, r18
+	sts block_y, r17
+	sts block_x, r16
+
+	/*ldi r16, 18
+	ldi r17, 12
+	ldi Zl, LOW(stringPoziom*2)
+	ldi Zh, HIGH(stringPoziom*2)
+
+	rcall DrawString
+
+	ldi r16, 24
+	ldi r17, 14
+	lds r18, level
+	rcall DrawNumber*/
 
 rjmp InfinityLoop
 
@@ -500,6 +731,29 @@ SetBlock:
 SetPixel:
 	st X, r16
 	ret*/
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+PauseGame:
+		sbrs r11, 4
+		rjmp PauseGame_Begin
+		ret
+
+PauseGame_Begin:
+	lds r16, gameover
+	cpi r16, 0xff
+	breq Pause_uciekamy
+	lds r16, pause
+	ldi r17, 0xff
+	eor r16, r17
+
+	sts pause, r16
+
+	ldi r17, 29
+
+	mov r5, r17
+Pause_uciekamy:
+	ret
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -863,7 +1117,6 @@ ClearMap:
 
 ClearMapLoop_:
 	sts block_y, r2
-
 	ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1094,10 +1347,315 @@ MoveLine:
 
 	ret
 
+; r16 - x
+; r17 - y
+; Z - string
+DrawString:
+	ldi r18, SCREEN_WIDTH
+	mul r17, r18
 
+	add r0, r16
+	adc r1, r2
+
+	ldi Xl, LOW( 96 )
+	ldi Xh, HIGH( 96 )	
+
+	add Xl, r0
+	adc Xh, r1
+
+
+	DrawStringLoop:
+	lpm r17, Z+
+	cpi r17, 0
+	breq DrawStringEnd
+	cpi r17, ' '
+	breq DrawSpace
+
+	subi r17, 46
+
+	ldi r16, 56
+	add r17, r16
+	st X+, r17
+
+	rjmp DrawStringLoop
+DrawStringEnd:
+	ret
+
+DrawSpace:
+	adiw X, 1
+	rjmp DrawStringLoop
+
+; r16 - x
+; r17 - y
+; r18 - char
+DrawChar:
+	push r18
+	ldi r18, SCREEN_WIDTH
+	mul r17, r18
+
+	add r0, r16
+	adc r1, r2
+
+	ldi Xl, LOW( 96 )
+	ldi Xh, HIGH( 96 )	
+
+	add Xl, r0
+	adc Xh, r1
+	pop r18
+
+	subi r18, 46
+
+	ldi r16, 56
+	add r18, r16
+	st X+, r18
+
+	ret
+
+
+; r16 - x (r align!)
+; r17 - y
+; r18 - number
+DrawNumber:
+	ldi r19, SCREEN_WIDTH
+	mul r17, r19
+
+	add r0, r16
+	adc r1, r2
+
+	ldi Xl, LOW( 96 )
+	ldi Xh, HIGH( 96 )	
+
+	add Xl, r0
+	adc Xh, r1
+
+	; x/10
+	mov r16, r18
+	ldi r17, 10
+	rcall divide
+
+	mov r18, r16
+
+	ldi r16, 56+2
+	add r17, r16
+	st -X, r17
+
+
+	; x/10
+	mov r16, r18
+	ldi r17, 10
+	rcall divide
+
+	mov r18, r16
+
+	ldi r16, 56+2
+	add r17, r16
+	st -X, r17
+
+	
+	; x/10
+	mov r16, r18
+	ldi r17, 10
+	rcall divide
+
+	mov r18, r16
+
+	ldi r16, 56+2
+	add r17, r16
+	st -X, r17
+
+	ret
+
+
+; r16 - a
+; r17 - b 
+;
+; a/b = X
+; a%b = y
+;
+; r16 - X
+; r17 - y
+divide:
+push r18
+	ldi r18, 0
+
+div_loop:
+	cp r16, r17 ; if a>b, divide
+	brsh div_
+	brlo mod_
+
+	rjmp div_loop
+
+
+div_:
+	inc r18
+
+	sub r16, r17
+	rjmp div_loop
+
+mod_:
+	mov r17, r16 ;reszta
+	mov r16, r18 ;calkowita
+
+pop r18
+	ret
+
+Highscores:
+	rcall ClearScreen
+
+	ldi r16, 10
+	ldi r17, 2
+	ldi Zl, LOW(stringWYNIKI*2)
+	ldi Zh, HIGH(stringWYNIKI*2)
+	rcall DrawString
+
+	ldi r16, 0
+	mov r14, r16
+Highscores_loop:
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1
+	ldi r18, 0
+	mov r17, r14
+	lsl r17
+	lsl r17
+	rcall EEPROM_read
+
+	mov r18, r16
+
+	ldi r16, 8
+	ldi r17, 5
+	mov r20, r14
+	lsl r20
+	add r17, r20	
+	rcall DrawChar
+
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2
+	ldi r18, 0
+	mov r17, r14
+	lsl r17
+	lsl r17
+	inc r17
+	rcall EEPROM_read
+
+	mov r18, r16
+
+	ldi r16, 9
+	ldi r17, 5
+	mov r20, r14
+	lsl r20
+	add r17, r20	
+	rcall DrawChar
+
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;3
+	ldi r18, 0
+	mov r17, r14
+	lsl r17
+	lsl r17
+	inc r17
+	inc r17
+	rcall EEPROM_read
+
+	mov r18, r16
+
+	ldi r16, 10
+	ldi r17, 5
+	mov r20, r14
+	lsl r20
+	add r17, r20	
+	rcall DrawChar
+	
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;4
+	ldi r18, 0
+	mov r17, r14
+	lsl r17
+	lsl r17
+	inc r17
+	inc r17
+	inc r17
+	rcall EEPROM_read
+
+	mov r18, r16
+
+	ldi r16, 18
+	ldi r17, 5
+	mov r20, r14
+	lsl r20
+	add r17, r20	
+	rcall DrawNumber
+
+
+	inc r14
+	mov r16, r14
+	cpi r16, 10
+	breq Highscores_
+	rjmp Highscores_loop
+
+	Highscores_:
+	ret
+
+EEPROM_read:
+	sbic EECR, EEWE
+	rjmp EEPROM_read
+
+	out EEARH, r18
+	out EEARL, r17
+	
+	sbi EECR, EERE
+	in r16, EEDR
+	ret
+
+check_highscore:
+	ldi r19, 0
+	ldi r18, 0
+check_highscore_loop:
+	mov r17, r19
+	lsl r17
+	lsl r17
+	inc r17
+	inc r17
+	inc r17
+	rcall EEPROM_read
+
+	lds r15, lines
+	cp r15, r16
+	; wieksze - wpisujemy
+	; mniejsze - jazda
+
+	inc r19
+	cpi r19, 10
+	breq check_highscore_end
+	rjmp check_highscore_loop
+	check_highscore_end:
+	ret
+
+stringEmpty: .db "@@@@@", 0
+stringPauza: .db "PAUZA", 0
+stringGameover:.db "KONIEC GRY", 0
+stringWynik: .db "WYNIK", 0
+stringLinie: .db "LINIE", 0
+stringPoziom: .db "POZIOM", 0
+stringNastepny: .db "NASTEPNY", 0
+stringWYNIKI: .db "WYNIKI", 0
+
+.include "splash.asm"
 .include "Random.asm"
 .include "Pad.asm"
 .include "Uart.asm"
 
 .include "blocks.asm"
 
+
+.ESEG
+.DB 'K', 'U', 'B', 76
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0
+.DB 'A', 'A', 'A', 0

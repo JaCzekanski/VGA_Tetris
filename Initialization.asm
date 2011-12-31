@@ -53,5 +53,8 @@ ldi r16, 1
 sts block_type, r16
 
 sts pause, r2
+sts SCORE, r2
+sts lines, r2
+sts level, r2
 
 sei

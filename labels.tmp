@@ -11,16 +11,19 @@
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\macros.asm</FILE>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Video.asm</FILE>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Initialization.asm</FILE>
+  <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm</FILE>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm</FILE>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm</FILE>
+  <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\font.asm</FILE>
  </INCLUDED_FILES>
  <OBJECT_FILES>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\AVR_Tetris.obj</FILE>
  </OBJECT_FILES>
  <HEX_FILES>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\AVR_Tetris.hex</FILE>
+  <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\AVR_Tetris.eep</FILE>
  </HEX_FILES>
  <OUTPUT_FILES>
   <FILE>D:\KubX\Dropbox\dev\AVR_Tetris\AVR_Tetris.map</FILE>
@@ -33,6 +36,11 @@
   <block_type><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>9</LINE></block_type>
   <block_rotation><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>10</LINE></block_rotation>
   <pause><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>11</LINE></pause>
+  <gameover><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>12</LINE></gameover>
+  <score><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>13</LINE></score>
+  <lines><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>14</LINE></lines>
+  <level><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>15</LINE></level>
+  <next><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>16</LINE></next>
   <START><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Initialization.asm</FILE><LINE>1</LINE></START>
   <VIDEO_isr><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Video.asm</FILE><LINE>42</LINE></VIDEO_isr>
   <delay2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Video.asm</FILE><LINE>55</LINE></delay2>
@@ -52,85 +60,134 @@
   <UART_init><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm</FILE><LINE>10</LINE></UART_init>
   <PAD_init><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm</FILE><LINE>4</LINE></PAD_init>
   <RANDOM_init><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>3</LINE></RANDOM_init>
-  <ClearScreen><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>814</LINE></ClearScreen>
-  <DebugDrawCorners><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>783</LINE></DebugDrawCorners>
-  <DrawMap><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>720</LINE></DrawMap>
-  <InfinityLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>30</LINE></InfinityLoop>
-  <changeto0><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>44</LINE></changeto0>
-  <asdasdasDAS><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>49</LINE></asdasdasDAS>
+  <PROGRAM_START><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>30</LINE></PROGRAM_START>
+  <DrawSplashScreen><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>1</LINE></DrawSplashScreen>
+  <Splash_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>32</LINE></Splash_loop>
   <PAD_GetState><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm</FILE><LINE>22</LINE></PAD_GetState>
-  <ClearMap><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>837</LINE></ClearMap>
-  <MoveRight><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>592</LINE></MoveRight>
-  <MoveLeft><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>631</LINE></MoveLeft>
-  <MoveDown><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>674</LINE></MoveDown>
-  <RotateRight><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>506</LINE></RotateRight>
-  <RotateLeft><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>549</LINE></RotateLeft>
-  <update_block><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>86</LINE></update_block>
-  <ClearBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>334</LINE></ClearBlock>
-  <check_collision><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>872</LINE></check_collision>
-  <block_clear_tramp><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>106</LINE></block_clear_tramp>
-  <block_clear_tramp_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>109</LINE></block_clear_tramp_>
-  <block_clear><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>217</LINE></block_clear>
-  <SetBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>243</LINE></SetBlock>
-  <loop_check_map><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>122</LINE></loop_check_map>
-  <check_line><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>972</LINE></check_line>
-  <check_map_linefull><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>137</LINE></check_map_linefull>
-  <loop_check_map_continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>130</LINE></loop_check_map_continue>
-  <loop_check_map_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>157</LINE></loop_check_map_end>
-  <linefull_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>142</LINE></linefull_loop>
-  <MoveLine><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1037</LINE></MoveLine>
-  <linefull_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>151</LINE></linefull_end>
-  <RANDOM_get><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>17</LINE></RANDOM_get>
-  <LimitBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>204</LINE></LimitBlock>
-  <LimitBlock_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>174</LINE></LimitBlock_>
+  <StartGame><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>45</LINE></StartGame>
+  <Highscores><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1502</LINE></Highscores>
+  <ClearScreen><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1068</LINE></ClearScreen>
+  <DebugDrawCorners><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1037</LINE></DebugDrawCorners>
+  <DrawMap><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>974</LINE></DrawMap>
+  <RANDOM_block><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>27</LINE></RANDOM_block>
+  <InfinityLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>76</LINE></InfinityLoop>
+  <PauseGame><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>736</LINE></PauseGame>
+  <omnitinput><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>123</LINE></omnitinput>
+  <MoveRight><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>846</LINE></MoveRight>
+  <MoveLeft><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>885</LINE></MoveLeft>
+  <MoveDown><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>928</LINE></MoveDown>
+  <RotateRight><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>760</LINE></RotateRight>
+  <RotateLeft><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>803</LINE></RotateLeft>
+  <update_block><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>137</LINE></update_block>
+  <MainLoop_Redraw_tramp><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>162</LINE></MainLoop_Redraw_tramp>
+  <ClearBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>565</LINE></ClearBlock>
+  <check_collision><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1125</LINE></check_collision>
+  <block_clear_tramp><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>165</LINE></block_clear_tramp>
+  <block_clear_tramp_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>168</LINE></block_clear_tramp_>
+  <MainLoop_Redraw><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>353</LINE></MainLoop_Redraw>
+  <block_clear><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>338</LINE></block_clear>
+  <SetBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>474</LINE></SetBlock>
+  <loop_check_map><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>182</LINE></loop_check_map>
+  <check_line><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1225</LINE></check_line>
+  <check_map_linefull><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>200</LINE></check_map_linefull>
+  <loop_check_map_continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>190</LINE></loop_check_map_continue>
+  <loop_check_map_end_tramp><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>197</LINE></loop_check_map_end_tramp>
+  <loop_check_map_end_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>268</LINE></loop_check_map_end_>
+  <linefull_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>206</LINE></linefull_loop>
+  <MoveLine><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1290</LINE></MoveLine>
+  <linefull_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>215</LINE></linefull_end>
+  <add_single><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>224</LINE></add_single>
+  <loop_check_map_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>289</LINE></loop_check_map_end>
+  <add_double><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>234</LINE></add_double>
+  <add_triple><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>244</LINE></add_triple>
+  <add_tetris><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>254</LINE></add_tetris>
+  <level_up><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>263</LINE></level_up>
+  <divide><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1477</LINE></divide>
   <COLORS><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm</FILE><LINE>178</LINE></COLORS>
-  <GameOver><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>199</LINE></GameOver>
-  <MainLoop_Redraw><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>232</LINE></MainLoop_Redraw>
-  <LimitBlock_dec><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>213</LINE></LimitBlock_dec>
-  <LimitBlockY><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>227</LINE></LimitBlockY>
-  <loop_SetBlock_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>261</LINE></loop_SetBlock_>
-  <loop_SetBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>253</LINE></loop_SetBlock>
+  <_GameOver><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>332</LINE></_GameOver>
+  <LimitBlockY><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>348</LINE></LimitBlockY>
+  <DrawGameover><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>378</LINE></DrawGameover>
+  <DrawPause><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>367</LINE></DrawPause>
+  <DrawEmpty><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>373</LINE></DrawEmpty>
+  <stringPauza><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1611</LINE></stringPauza>
+  <drawstrings_Cont><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>382</LINE></drawstrings_Cont>
+  <stringEmpty><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1610</LINE></stringEmpty>
+  <stringGameover><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1612</LINE></stringGameover>
+  <DrawString><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1353</LINE></DrawString>
+  <stringWynik><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1613</LINE></stringWynik>
+  <DrawNumber><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1418</LINE></DrawNumber>
+  <stringLinie><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1614</LINE></stringLinie>
+  <stringNastepny><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1616</LINE></stringNastepny>
+  <loop_SetBlock_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>492</LINE></loop_SetBlock_>
+  <loop_SetBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>484</LINE></loop_SetBlock>
   <BLOCK_START><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm</FILE><LINE>2</LINE></BLOCK_START>
-  <loop_DrawBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>295</LINE></loop_DrawBlock>
-  <SetPixel><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>326</LINE></SetPixel>
-  <SetBlock_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>322</LINE></SetBlock_End>
-  <loop_ClearBlock_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>352</LINE></loop_ClearBlock_>
-  <loop_ClearBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>344</LINE></loop_ClearBlock>
-  <loop_Draw_ClearBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>386</LINE></loop_Draw_ClearBlock>
-  <SetPixel2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>417</LINE></SetPixel2>
-  <ClearBlock_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>413</LINE></ClearBlock_End>
-  <RotateRight_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>511</LINE></RotateRight_Begin>
-  <RotateRight_Reset><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>543</LINE></RotateRight_Reset>
-  <RotateRight_Continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>522</LINE></RotateRight_Continue>
-  <RotateRight_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>538</LINE></RotateRight_End>
-  <RotateLeft_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>554</LINE></RotateLeft_Begin>
-  <RotateLeft_Reset><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>585</LINE></RotateLeft_Reset>
-  <RotateLeft_Continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>565</LINE></RotateLeft_Continue>
-  <RotateLeft_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>580</LINE></RotateLeft_End>
-  <MoveRight_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>597</LINE></MoveRight_Begin>
-  <MoveRightContinue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>618</LINE></MoveRightContinue>
-  <MoveLeft_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>636</LINE></MoveLeft_Begin>
-  <MoveLeftContinue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>657</LINE></MoveLeftContinue>
-  <MoveDown_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>680</LINE></MoveDown_Begin>
-  <MoveDownContinue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>704</LINE></MoveDownContinue>
-  <hor_loop_1><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>727</LINE></hor_loop_1>
-  <hor_loop_1_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>734</LINE></hor_loop_1_end>
-  <ver_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>742</LINE></ver_loop>
-  <ver_loop_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>756</LINE></ver_loop_end>
-  <hor_loop_2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>764</LINE></hor_loop_2>
-  <DrawMap_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>772</LINE></DrawMap_>
-  <ClearLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>819</LINE></ClearLoop>
-  <ClearLoop_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>828</LINE></ClearLoop_>
-  <ClearMapLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>843</LINE></ClearMapLoop>
-  <ClearMapLoop_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>864</LINE></ClearMapLoop_>
-  <loop_CheckBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>921</LINE></loop_CheckBlock>
-  <CheckPixel><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>953</LINE></CheckPixel>
-  <CheckBlock_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>948</LINE></CheckBlock_End>
-  <CheckPixel_no><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>964</LINE></CheckPixel_no>
-  <loop_check_line><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>990</LINE></loop_check_line>
-  <CheckLine_false><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>999</LINE></CheckLine_false>
-  <CheckLine_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1002</LINE></CheckLine_end>
-  <ClearLine><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1007</LINE></ClearLine>
+  <loop_DrawBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>526</LINE></loop_DrawBlock>
+  <SetPixel><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>557</LINE></SetPixel>
+  <SetBlock_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>553</LINE></SetBlock_End>
+  <loop_ClearBlock_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>583</LINE></loop_ClearBlock_>
+  <loop_ClearBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>575</LINE></loop_ClearBlock>
+  <loop_Draw_ClearBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>617</LINE></loop_Draw_ClearBlock>
+  <SetPixel2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>648</LINE></SetPixel2>
+  <ClearBlock_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>644</LINE></ClearBlock_End>
+  <PauseGame_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>741</LINE></PauseGame_Begin>
+  <Pause_uciekamy><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>754</LINE></Pause_uciekamy>
+  <RotateRight_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>765</LINE></RotateRight_Begin>
+  <RotateRight_Reset><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>797</LINE></RotateRight_Reset>
+  <RotateRight_Continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>776</LINE></RotateRight_Continue>
+  <RotateRight_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>792</LINE></RotateRight_End>
+  <RotateLeft_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>808</LINE></RotateLeft_Begin>
+  <RotateLeft_Reset><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>839</LINE></RotateLeft_Reset>
+  <RotateLeft_Continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>819</LINE></RotateLeft_Continue>
+  <RotateLeft_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>834</LINE></RotateLeft_End>
+  <MoveRight_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>851</LINE></MoveRight_Begin>
+  <MoveRightContinue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>872</LINE></MoveRightContinue>
+  <MoveLeft_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>890</LINE></MoveLeft_Begin>
+  <MoveLeftContinue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>911</LINE></MoveLeftContinue>
+  <MoveDown_Begin><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>934</LINE></MoveDown_Begin>
+  <MoveDownContinue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>958</LINE></MoveDownContinue>
+  <hor_loop_1><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>981</LINE></hor_loop_1>
+  <hor_loop_1_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>988</LINE></hor_loop_1_end>
+  <ver_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>996</LINE></ver_loop>
+  <ver_loop_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1010</LINE></ver_loop_end>
+  <hor_loop_2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1018</LINE></hor_loop_2>
+  <DrawMap_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1026</LINE></DrawMap_>
+  <ClearLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1073</LINE></ClearLoop>
+  <ClearLoop_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1082</LINE></ClearLoop_>
+  <ClearMap><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1091</LINE></ClearMap>
+  <ClearMapLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1097</LINE></ClearMapLoop>
+  <ClearMapLoop_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1118</LINE></ClearMapLoop_>
+  <loop_CheckBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1174</LINE></loop_CheckBlock>
+  <CheckPixel><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1206</LINE></CheckPixel>
+  <CheckBlock_End><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1201</LINE></CheckBlock_End>
+  <CheckPixel_no><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1217</LINE></CheckPixel_no>
+  <loop_check_line><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1243</LINE></loop_check_line>
+  <CheckLine_false><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1252</LINE></CheckLine_false>
+  <CheckLine_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1255</LINE></CheckLine_end>
+  <ClearLine><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1260</LINE></ClearLine>
+  <DrawStringLoop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1367</LINE></DrawStringLoop>
+  <DrawStringEnd><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1381</LINE></DrawStringEnd>
+  <DrawSpace><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1384</LINE></DrawSpace>
+  <DrawChar><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1391</LINE></DrawChar>
+  <div_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1481</LINE></div_loop>
+  <div_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1489</LINE></div_>
+  <mod_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1495</LINE></mod_>
+  <stringWYNIKI><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1617</LINE></stringWYNIKI>
+  <Highscores_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1513</LINE></Highscores_loop>
+  <EEPROM_read><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1599</LINE></EEPROM_read>
+  <Highscores_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1596</LINE></Highscores_>
+  <stringPoziom><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\main.asm</FILE><LINE>1615</LINE></stringPoziom>
+  <stringTetris><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>63</LINE></stringTetris>
+  <stringAutor><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>64</LINE></stringAutor>
+  <stringJakubCzekanski><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>65</LINE></stringJakubCzekanski>
+  <stringNacisnij1><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>66</LINE></stringNacisnij1>
+  <stringNacisnij2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>67</LINE></stringNacisnij2>
+  <stringinfo1><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>68</LINE></stringinfo1>
+  <stringinfo2><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>69</LINE></stringinfo2>
+  <stringinfo3><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm</FILE><LINE>70</LINE></stringinfo3>
+  <RANDOM_get><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>17</LINE></RANDOM_get>
+  <LimitBlock><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>33</LINE></LimitBlock>
+  <LimitBlock_dec><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>42</LINE></LimitBlock_dec>
+  <LimitBlock_><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm</FILE><LINE>45</LINE></LimitBlock_>
   <GetPadState_loop><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm</FILE><LINE>34</LINE></GetPadState_loop>
   <button_pressed><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm</FILE><LINE>60</LINE></button_pressed>
   <GetPadState_continue><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm</FILE><LINE>45</LINE></GetPadState_continue>
@@ -140,5 +197,6 @@
   <UART_puts_end><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm</FILE><LINE>43</LINE></UART_puts_end>
   <UART_getc><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm</FILE><LINE>47</LINE></UART_getc>
   <TILES><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm</FILE><LINE>193</LINE></TILES>
+  <FONT_START><FILE>D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm</FILE><LINE>583</LINE></FONT_START>
  </LABELS>
 </ASSEMBLER_INFO>

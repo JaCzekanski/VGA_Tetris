@@ -22,3 +22,26 @@ RANDOM_get:
 	pop r16
 
 	ret
+
+
+RANDOM_block:
+	rcall RANDOM_get
+
+	cpi r16, 7
+	brsh LimitBlock
+
+	LimitBlock:
+	mov r17, r16
+	rol r17
+	eor r16, r17
+	andi r16, 0b111
+	cpi r16, 7
+	breq LimitBlock_dec
+	rjmp LimitBlock_
+
+	LimitBlock_dec:
+	dec r16
+
+	LimitBlock_:
+
+ret

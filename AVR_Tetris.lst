@@ -1,14 +1,16 @@
 
-AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Sat Dec 31 13:40:13 2011
+AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Sat Dec 31 18:16:03 2011
 
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1): Including file 'd:\app\Atmel\AVR Tools\AvrAssembler2\Appnotes\m8def.inc'
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(2): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\macros.asm'
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(21): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Video.asm'
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(22): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Initialization.asm'
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1098): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm'
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1099): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm'
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1100): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm'
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(25): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Video.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(26): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Initialization.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1619): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1620): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Random.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1621): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Pad.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1622): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\Uart.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1624): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm'
+D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm(584): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\font.asm'
                  
                  
                  
@@ -773,7 +775,7 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  .equ SCREEN_WIDTH = 26
                  .equ SCREEN_HEIGHT = 30
                  
-                 .equ MAP_X = 5
+                 .equ MAP_X = 2
                  
                  .def VSYNC=r23
                  .def LINEl=r24
@@ -817,7 +819,11 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
 000423           block_type: .BYTE 1
 000424           block_rotation: .BYTE 1
 000425           pause: .BYTE 1
-                 ;score: .WORD 2
+000426           gameover: .BYTE 1
+000427           score: .BYTE 1
+000428           lines: .BYTE 1
+000429           level: .BYTE 1
+00042a           next: .BYTE 1
                  
                  .cseg
                  
@@ -1439,12 +1445,12 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  
                  
                  ; Init UART at 57600bps
-0001d4 d2aa      rcall UART_init
+0001d4 d4a0      rcall UART_init
                  
                  ; Initialize pad
-0001d5 d280      rcall PAD_init
+0001d5 d476      rcall PAD_init
                  
-0001d6 d274      rcall RANDOM_init
+0001d6 d45e      rcall RANDOM_init
                  
                  ; Init Video
 0001d7 dfdf      rcall VIDEO_init
@@ -1472,98 +1478,156 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
 0001e7 9300 0423 sts block_type, r16
                  
 0001e9 9220 0425 sts pause, r2
+0001eb 9220 0427 sts SCORE, r2
+0001ed 9220 0428 sts lines, r2
+0001ef 9220 0429 sts level, r2
                  
-0001eb 9478      sei
+0001f1 9478      sei
+                 
                  
                  /* Main program  */
+                 PROGRAM_START:
+0001f2 d3df      	rcall DrawSplashScreen
+                 	Splash_loop:
+0001f3 3f7f      	cpi VSYNC, 0xff
+0001f4 f7f1      	brne Splash_loop
+0001f5 2777      	clr VSYNC
                  
-0001ec d1b5      	rcall ClearScreen
-0001ed d1a3      	rcall DebugDrawCorners
-0001ee d17e      	rcall DrawMap
+0001f6 d45c      	rcall PAD_GetState
+0001f7 fca4      	sbrc r10, 4 ; Start
+0001f8 c003      	rjmp StartGame
+0001f9 fca6      	sbrc r10, 6 ; Highscores
+0001fa d36d      	rcall Highscores
+                 
+0001fb cff7      	rjmp Splash_loop
+                 
+                 StartGame:
+                 
+0001fc d273      	rcall ClearScreen
+0001fd d261      	rcall DebugDrawCorners
+0001fe d23c      	rcall DrawMap
+                 
+0001ff 2cba      	mov r11, r10
+                 
+                 	; Variables
+000200 e006      	ldi r16, 6
+000201 9300 0420 	sts block_y, r16
+000203 e009      	ldi r16, 5+X_DELTA
+000204 9300 0421 	sts block_x, r16
+                 
+000206 e001      	ldi r16,0b1
+000207 9300 0422 	sts block_color, r16
+000209 e001      	ldi r16, 1
+00020a 9300 0423 	sts block_type, r16
+                 
+00020c 9220 0425 	sts pause, r2
+00020e 9220 0426 	sts gameover, r2
+000210 9220 0427 	sts SCORE, r2
+000212 9220 0428 	sts lines, r2
+000214 9220 0429 	sts level, r2
+                 
+000216 d429      	rcall RANDOM_block
+000217 9300 0423 	sts block_type, r16
+                 
+000219 d426      	rcall RANDOM_block
+00021a 9300 042a 	sts next, r16
                  
                  InfinityLoop:
-0001ef 3f7f      	cpi VSYNC, 0xff
-0001f0 f7f1      	brne InfinityLoop
-0001f1 2777      	clr VSYNC
+00021c 3f7f      	cpi VSYNC, 0xff
+00021d f7f1      	brne InfinityLoop
+00021e 2777      	clr VSYNC
                  
-0001f2 b503      	in r16, OCR2
-0001f3 3f0f      	cpi r16, 0xff
-0001f4 f019      	breq changeto0
+                 	/*in r16, OCR2
+                 	cpi r16, 0xff
+                 	breq changeto0
                  
-0001f5 ef0f      	ldi r16, 0xff
-0001f6 bd03      	out OCR2, r16
+                 	ldi r16, 0xff
+                 	out OCR2, r16
                  
-0001f7 c002      	rjmp asdasdasDAS
+                 	rjmp asdasdasDAS
                  
                  	changeto0:
-0001f8 e000      	ldi r16, 0
-0001f9 bd03      	out OCR2, r16
+                 	ldi r16, 0
+                 	out OCR2, r16
                  
                  
-                 asdasdasDAS:
+                 asdasdasDAS:*/
                  	; Input
                  
-0001fa d262      	rcall PAD_GetState
+00021f d433      	rcall PAD_GetState
                  
+000220 fca5      	sbrc r10, 5 ; Select
+000221 dfd0      	rcall PROGRAM_START
                  
-0001fb fca4      	sbrc r10, 4 ; Start
-0001fc d1b0      	rcall ClearMap
+000222 fca4      	sbrc r10, 4 ; Start
+000223 d17c      	rcall PauseGame
                  	;sbrc r10, 5 ; Select
                  	;rcall RandomBlock
-0001fd fca0      	sbrc r10, 0 ; Right
-0001fe d11d      	rcall MoveRight
-0001ff fca1      	sbrc r10, 1 ; Left
-000200 d135      	rcall MoveLeft
-000201 fca2      	sbrc r10, 2 ; Down
-000202 d14f      	rcall MoveDown
-000203 fca7      	sbrc r10, 7 ; B
-000204 d0dd      	rcall RotateRight
-000205 fca6      	sbrc r10, 6 ; A
-000206 d0f8      	rcall RotateLeft
                  
-000207 2cba      	mov r11, r10
+000224 9100 0425 	lds r16, pause
+000226 3f0f      	cpi r16, 0xff
+000227 f051      	breq omnitinput
                  
-000208 9100 0425 	lds r16, pause
-00020a 3f0f      	cpi r16, 0xff
-00020b f319      	breq InfinityLoop
+000228 fca0      	sbrc r10, 0 ; Right
+000229 d1c0      	rcall MoveRight
+00022a fca1      	sbrc r10, 1 ; Left
+00022b d1d8      	rcall MoveLeft
+00022c fca2      	sbrc r10, 2 ; Down
+00022d d1f2      	rcall MoveDown
+00022e fca7      	sbrc r10, 7 ; B
+00022f d180      	rcall RotateRight
+000230 fca6      	sbrc r10, 6 ; A
+000231 d19b      	rcall RotateLeft
                  
-00020c 2466       	clr r6 ;  No new frame
+                 omnitinput:
+000232 2cba      	mov r11, r10
+                 
+000233 2466       	clr r6 ;  No new frame
                  	; 500ms between block moves
-00020d 2d05      	mov r16, r5
-00020e 9503      	inc r16
-00020f 310e      	cpi r16, 30
-000210 2e50      	mov r5, r16
-000211 f009      	breq update_block
                  
-000212 cfdc      	rjmp InfinityLoop
+000234 2d05      	mov r16, r5
+000235 9503      	inc r16
+000236 310e      	cpi r16, 30
+000237 2e50      	mov r5, r16
+000238 f009      	breq update_block
+                 
+000239 cfe2      	rjmp InfinityLoop
                  
                  	update_block:
-000213 2c63      		mov r6, r3 ;  New frame
-000214 2c52      		mov r5, r2 ; reset counter
+                 	
+00023a 9100 0425 		lds r16, pause
+00023c 3000      		cpi r16, 0
+00023d f469      		brne MainLoop_Redraw_tramp
+                 
+00023e 2c63      		mov r6, r3 ;  New frame
+00023f 2c52      		mov r5, r2 ; reset counter
                  
                  		;; Check for collision below
                  
-000215 e000      		ldi r16, 0
-000216 d093      		rcall ClearBlock
+000240 e000      		ldi r16, 0
+000241 d126      		rcall ClearBlock
                  
-000217 9100 0421 		lds r16, block_x
-000219 9110 0420 		lds r17, block_y
-00021b 9513      		inc r17
+000242 9100 0421 		lds r16, block_x
+000244 9110 0420 		lds r17, block_y
+000246 9513      		inc r17
                  
-00021c d1a8      		rcall check_collision
+000247 d24b      		rcall check_collision
                  
-00021d 3000      		cpi r16, 0
+000248 3000      		cpi r16, 0
                  
-00021e f009      		breq block_clear_tramp; We can go further
-00021f c001      		rjmp block_clear_tramp_
+000249 f011      		breq block_clear_tramp; We can go further
+00024a c002      		rjmp block_clear_tramp_
+                 
+                 MainLoop_Redraw_tramp:
+00024b c08a       	rjmp MainLoop_Redraw
                  
                  block_clear_tramp:
-000220 c041      	rjmp block_clear
+00024c c07d      	rjmp block_clear
                  
                  block_clear_tramp_:
                  
-000221 9100 0422 		lds r16, block_color
-000223 d04e      		rcall SetBlock
+00024d 9100 0422 		lds r16, block_color
+00024f d0e0      		rcall SetBlock
                  
                  	; Collision
                  
@@ -1571,123 +1635,295 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  
                  	;for (int y=0; y<20; y++)
                  
-000224 e010      		ldi r17, 0
+000250 e010      		ldi r17, 0
+000251 24dd      		clr r13 ; line count
                  
                  		loop_check_map:
-000225 931f      			push r17
-000226 d1d5      			rcall check_line
-000227 911f      			pop r17
+000252 931f      			push r17
+000253 d276      			rcall check_line
+000254 911f      			pop r17
                  
-000228 3f0f      			cpi r16, 0xff
-000229 f021      			breq check_map_linefull
+000255 3f0f      			cpi r16, 0xff
+000256 f029      			breq check_map_linefull
                  
                  		loop_check_map_continue:
                  
-00022a 9513      			inc r17
-00022b 3115      			cpi r17, 21
-00022c f061      			breq loop_check_map_end
-00022d cff7      			rjmp loop_check_map
+000257 9513      			inc r17
+000258 3115      			cpi r17, 21
+000259 f009      			breq loop_check_map_end_tramp
+00025a cff7      			rjmp loop_check_map
+                 
+                 loop_check_map_end_tramp:
+00025b c032      rjmp loop_check_map_end_
                  
                  	check_map_linefull:
-00022e 931f      	push r17
+00025c 931f      	push r17
+00025d 94d3      	inc r13
                  
-00022f 2f01      	mov r16, r17
+00025e 2f01      	mov r16, r17
                  
                  linefull_loop:
-000230 2f10      	mov r17, r16
-000231 930f      	push r16
-000232 d1f2      	rcall MoveLine
-000233 910f      	pop r16
+00025f 2f10      	mov r17, r16
+000260 930f      	push r16
+000261 d291      	rcall MoveLine
+000262 910f      	pop r16
                  
-000234 950a      	dec r16
-000235 f009      	breq linefull_end
-000236 cff9      	rjmp linefull_loop
+000263 950a      	dec r16
+000264 f009      	breq linefull_end
+000265 cff9      	rjmp linefull_loop
                  linefull_end:
-000237 911f      	pop r17
-000238 cff1      	rjmp loop_check_map_continue
+000266 911f      	pop r17
+                 
                  	
+000267 9100 0428 	lds r16, lines
+000269 9503      	inc r16
+00026a 9300 0428 	sts lines, r16
+00026c cfea      	rjmp loop_check_map_continue
+                 
+                 			add_single:
+00026d 9100 0427 			lds r16, score
+                 
+00026f e015      			ldi r17, 5
+000270 0f01      			add r16, r17
+                 
+000271 9300 0427 			sts score, r16
+000273 c02d      			rjmp loop_check_map_end
                  
                  
-                 	loop_check_map_end:
+                 			add_double:
+000274 9100 0427 			lds r16, score
                  
+000276 e015      			ldi r17, 5
+000277 0f01      			add r16, r17
+                 
+000278 9300 0427 			sts score, r16
+00027a c026      			rjmp loop_check_map_end
+                 
+                 
+                 			add_triple:
+00027b 9100 0427 			lds r16, score
+                 
+00027d e015      			ldi r17, 5
+00027e 0f01      			add r16, r17
+                 
+00027f 9300 0427 			sts score, r16
+000281 c01f      			rjmp loop_check_map_end
+                 
+                 
+                 			add_tetris:
+000282 9100 0427 			lds r16, score
+                 
+000284 e015      			ldi r17, 5
+000285 0f01      			add r16, r17
+                 
+000286 9300 0427 			sts score, r16
+000288 c018      			rjmp loop_check_map_end
+                 
+                 level_up:
+000289 9100 0429 	lds r16, level
+00028b 9503      	inc r16
+00028c 9300 0429 	sts level, r16
+                 
+                 loop_check_map_end_:
+00028e 2d0d      mov r16, r13
+00028f 3000      cpi r16, 0
+000290 f081      breq loop_check_map_end
+000291 3001      cpi r16, 1
+000292 f2d1      breq add_single
+000293 3002      cpi r16, 2
+000294 f2f9      breq add_double
+000295 3003      cpi r16, 3
+000296 f321      breq add_triple
+000297 3004      cpi r16, 4
+000298 f349      breq add_tetris
+                 
+000299 9100 0428 lds r16, lines
+00029b 3000      cpi r16, 0
+00029c f021      breq loop_check_map_end
+00029d e11e      ldi r17, 30
+00029e d2bc      rcall divide
+00029f 3010      cpi r17, 0
+0002a0 f341      breq level_up
+                 
+                 loop_check_map_end:
                  	; We just reset position
                  
-000239 9220 0420 	sts block_y, r2
+0002a1 9100 0427 	lds r16, SCORE
+0002a3 9503      	inc r16
+0002a4 9300 0427 	sts SCORE, r16
                  
-00023b e009      	ldi r16, 5+X_DELTA
-00023c 9300 0421 	sts block_x, r16
+0002a6 9220 0420 	sts block_y, r2
                  
-00023e 9220 0424 	sts block_rotation, r2
+0002a8 e009      	ldi r16, 5+X_DELTA
+0002a9 9300 0421 	sts block_x, r16
                  
-                 	; And random new color
-000240 d210      	rcall RANDOM_get
+0002ab 9220 0424 	sts block_rotation, r2
                  
-000241 3007      	cpi r16, 7
-000242 f4b0      	brsh LimitBlock
+0002ad 9100 042a 	lds r16, next
+0002af 9300 0423 	sts block_type, r16
                  
-                 	LimitBlock_:
-000243 9300 0423 	sts block_type, r16
+0002b1 d38e      	rcall RANDOM_block
+0002b2 9300 042a 	sts next, r16
                  
-000245 eeec      	ldi Zl, LOW(2*COLORS)
-000246 e0fa      	ldi Zh, HIGH(2*COLORS)
                  
-000247 0fe0      	add Zl, r16
-000248 1df2      	adc Zh, r2
+0002b4 ede8      	ldi Zl, LOW(2*COLORS)
+0002b5 e0fe      	ldi Zh, HIGH(2*COLORS)
                  
-000249 9104      	lpm r16, Z
+0002b6 0fe0      	add Zl, r16
+0002b7 1df2      	adc Zh, r2
                  
-00024a 9300 0422 	sts block_color, r16
+0002b8 9104      	lpm r16, Z
+                 
+0002b9 9300 0422 	sts block_color, r16
                  
                  	; if collision, end of game
-00024c 9100 0421 	lds r16, block_x
-00024e 9110 0420 	lds r17, block_y
-000250 9513      	inc r17
-000251 9513      	inc r17
-000252 d172      	rcall check_collision
-000253 3f0f      	cpi r16, 0xff
-000254 f009      	breq GameOver
+0002bb 9100 0421 	lds r16, block_x
+0002bd 9110 0420 	lds r17, block_y
+0002bf 9513      	inc r17
+0002c0 9513      	inc r17
+0002c1 d1d1      	rcall check_collision
+0002c2 3f0f      	cpi r16, 0xff
+0002c3 f009      	breq _GameOver
                  
-000255 c018      	rjmp MainLoop_Redraw
+0002c4 c011      	rjmp MainLoop_Redraw
                  
                  
-                 GameOver:
+                 _GameOver:
                  ;rcall ClearScreen
-000256 9230 0425 sts pause, r3
-000258 cf96      rjmp InfinityLoop
-                 
-                 LimitBlock:
-000259 2f10      mov r17, r16
-00025a 1f11      rol r17
-00025b 2701      eor r16, r17
-00025c 7007      andi r16, 0b111
-00025d 3007      cpi r16, 7
-00025e f009      breq LimitBlock_dec
-00025f cfe3      rjmp LimitBlock_
-                 
-                 LimitBlock_dec:
-000260 950a      dec r16
-000261 cfe1      rjmp LimitBlock_
+0002c5 9230 0425 sts pause, r3
+0002c7 9230 0426 sts gameover, r3
+0002c9 cf52      rjmp InfinityLoop
                  
                  block_clear:
                  
-000262 9100 0420 	lds r16, block_y
-000264 9503      	inc r16
+0002ca 9100 0420 	lds r16, block_y
+0002cc 9503      	inc r16
                  
-000265 3105      	cpi r16, 21
-000266 f418      	brsh LimitBlockY
-000267 9300 0420 	sts block_y, r16
-000269 c004      	rjmp MainLoop_Redraw
+0002cd 3105      	cpi r16, 21
+0002ce f418      	brsh LimitBlockY
+0002cf 9300 0420 	sts block_y, r16
+0002d1 c004      	rjmp MainLoop_Redraw
                  
                  LimitBlockY:
-00026a e000      	ldi r16, 0
-00026b 9300 0420 	sts block_y, r16
-00026d c000      	rjmp MainLoop_Redraw
+0002d2 e000      	ldi r16, 0
+0002d3 9300 0420 	sts block_y, r16
+0002d5 c000      	rjmp MainLoop_Redraw
                  	
                  MainLoop_Redraw:
-00026e 9100 0422 	lds r16, block_color
-000270 d001      	rcall SetBlock
                  
-000271 cf7d      rjmp InfinityLoop
+0002d6 9100 0422 	lds r16, block_color
+0002d8 d057      	rcall SetBlock
+                 
+0002d9 9100 0426 	lds r16, gameover
+0002db 3f0f      	cpi r16, 0xff
+0002dc f059      	breq DrawGameover
+                 
+0002dd 9100 0425 	lds r16, pause
+0002df 3f0f      	cpi r16, 0xff
+0002e0 f009      	breq DrawPause
+0002e1 f419      	brne DrawEmpty
+                 	
+                 DrawPause:
+                 
+0002e2 e6ec      	ldi Zl, LOW(stringPauza*2)
+0002e3 e0fb      	ldi Zh, HIGH(stringPauza*2)
+                 
+0002e4 c005      	rjmp drawstrings_Cont
+                 DrawEmpty:
+0002e5 e6e6      	ldi Zl, LOW(stringEmpty*2)
+0002e6 e0fb      	ldi Zh, HIGH(stringEmpty*2)
+0002e7 c002      	rjmp drawstrings_Cont
+                 	
+                 	DrawGameover:
+0002e8 e7e2      	ldi Zl, LOW(stringGameover*2)
+0002e9 e0fb      	ldi Zh, HIGH(stringGameover*2)
+                 
+                 drawstrings_Cont:
+0002ea e00a      	ldi r16, 10
+0002eb e012      	ldi r17, 2
+0002ec d22c      	rcall DrawString
+                 
+                 
+0002ed e102      	ldi r16, 18
+0002ee e014      	ldi r17, 4
+0002ef e7ee      	ldi Zl, LOW(stringWynik*2)
+0002f0 e0fb      	ldi Zh, HIGH(stringWynik*2)
+0002f1 d227      	rcall DrawString
+                 
+                 
+0002f2 e108      	ldi r16, 24
+0002f3 e016      	ldi r17, 6
+0002f4 9120 0427 	lds r18, SCORE
+0002f6 d246      	rcall DrawNumber
+                 
+0002f7 e102      	ldi r16, 18
+0002f8 e018      	ldi r17, 8
+0002f9 e8e4      	ldi Zl, LOW(stringLinie*2)
+0002fa e0fb      	ldi Zh, HIGH(stringLinie*2)
+0002fb d21d      	rcall DrawString
+                 
+0002fc e108      	ldi r16, 24
+0002fd e01a      	ldi r17, 10
+0002fe 9120 0428 	lds r18, lines
+000300 d23c      	rcall DrawNumber
+                 	
+                 
+000301 e101      	ldi r16, 17
+000302 e01d      	ldi r17, 13
+000303 e9e2      	ldi Zl, LOW(stringNastepny*2)
+000304 e0fb      	ldi Zh, HIGH(stringNastepny*2)
+                 
+000305 d213      	rcall DrawString
+                 
+000306 9100 0421 	lds r16, block_x
+000308 9110 0420 	lds r17, block_y
+00030a 9120 0423 	lds r18, block_type
+00030c 9130 0424 	lds r19, block_rotation
+                 
+00030e 930f      	push r16
+00030f 931f      	push r17
+000310 932f      	push r18
+000311 933f      	push r19
+                 
+000312 e104      	ldi r16, 20
+000313 e01c      	ldi r17, 12
+000314 e030      	ldi r19, 0
+                 
+000315 9330 0424 	sts block_rotation, r19
+000317 9320 0423 	sts block_type, r18
+000319 9310 0420 	sts block_y, r17
+00031b 9300 0421 	sts block_x, r16
+                 
+00031d d04a      	rcall ClearBlock
+                 
+00031e 9120 042a 	lds r18, next
+000320 9320 0423 	sts block_type, r18
+                 
+000322 d00d      	rcall SetBlock
+                 
+000323 913f      	pop r19
+000324 912f      	pop r18
+000325 911f      	pop r17
+000326 910f      	pop r16
+                 
+000327 9330 0424 	sts block_rotation, r19
+000329 9320 0423 	sts block_type, r18
+00032b 9310 0420 	sts block_y, r17
+00032d 9300 0421 	sts block_x, r16
+                 
+                 	/*ldi r16, 18
+                 	ldi r17, 12
+                 	ldi Zl, LOW(stringPoziom*2)
+                 	ldi Zh, HIGH(stringPoziom*2)
+                 
+                 	rcall DrawString
+                 
+                 	ldi r16, 24
+                 	ldi r17, 14
+                 	lds r18, level
+                 	rcall DrawNumber*/
+                 
+00032f ceec      rjmp InfinityLoop
                  
                  
                  
@@ -1696,90 +1932,90 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ; r16 - color
                  SetBlock:
                  
-000272 930f      	push r16
-000273 9100 0420 	lds r16, block_y
-000275 eea4      		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
-000276 e0b0      		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
+000330 930f      	push r16
+000331 9100 0420 	lds r16, block_y
+000333 eea1      		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
+000334 e0b0      		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
                  
-000277 3000      	cpi r16, 0
-000278 f021      	breq loop_SetBlock_
+000335 3000      	cpi r16, 0
+000336 f021      	breq loop_SetBlock_
                  	
                  	loop_SetBlock:
                  
-000279 965a      		adiw X, SCREEN_WIDTH
+000337 965a      		adiw X, SCREEN_WIDTH
                  
-00027a 950a      		dec r16            ; 1 clk
-00027b f009      		breq loop_SetBlock_    ; 1/2 clk
-00027c cffc      		rjmp loop_SetBlock     ; 2 clk
+000338 950a      		dec r16            ; 1 clk
+000339 f009      		breq loop_SetBlock_    ; 1/2 clk
+00033a cffc      		rjmp loop_SetBlock     ; 2 clk
                  
                  	loop_SetBlock_:
                  
                  
-00027d 9100 0421 		lds r16, block_x
-00027f 0fa0      		add Xl, r16
-000280 e000      		ldi r16, 0
-000281 1fb0      		adc Xh, r16
-000282 910f      		pop r16
+00033b 9100 0421 		lds r16, block_x
+00033d 0fa0      		add Xl, r16
+00033e e000      		ldi r16, 0
+00033f 1fb0      		adc Xh, r16
+000340 910f      		pop r16
                  		
                  
-000283 e2ec      		ldi Zl, LOW(2*BLOCK_START)
-000284 e0f9      		ldi Zh, HIGH(2*BLOCK_START)
+000341 e1e8      		ldi Zl, LOW(2*BLOCK_START)
+000342 e0fd      		ldi Zh, HIGH(2*BLOCK_START)
                  
-000285 e420      		ldi r18, 64
-000286 9110 0423 		lds r17, block_type
+000343 e420      		ldi r18, 64
+000344 9110 0423 		lds r17, block_type
                  		; block type * 16
                  		; 4x line
-000288 9f12      		mul r17, r18
+000346 9f12      		mul r17, r18
                  
                  		
-000289 9120 0424 		lds r18, block_rotation
-00028b 0f22      		lsl r18
-00028c 0f22      		lsl r18
-00028d 0f22      		lsl r18
-00028e 0f22      		lsl r18
-00028f 0e02      		add r0, r18
-000290 1c12      		adc r1, r2
+000347 9120 0424 		lds r18, block_rotation
+000349 0f22      		lsl r18
+00034a 0f22      		lsl r18
+00034b 0f22      		lsl r18
+00034c 0f22      		lsl r18
+00034d 0e02      		add r0, r18
+00034e 1c12      		adc r1, r2
                  
-000291 0de0      		add Zl, r0
-000292 1df1      		adc Zh, r1
+00034f 0de0      		add Zl, r0
+000350 1df1      		adc Zh, r1
                  
                  
                  
-000293 e014      		ldi r17, 4
+000351 e014      		ldi r17, 4
                  	loop_DrawBlock:
-000294 9125      		lpm r18, Z+
+000352 9125      		lpm r18, Z+
                  		
-000295 1122      		cpse r18, r2
-000296 d011      		rcall SetPixel
-000297 9611      		adiw X, 1
+000353 1122      		cpse r18, r2
+000354 d011      		rcall SetPixel
+000355 9611      		adiw X, 1
                  
-000298 9125      		lpm r18, Z+
-000299 1122      		cpse r18, r2
-00029a d00d      		rcall SetPixel
-00029b 9611      		adiw X, 1
+000356 9125      		lpm r18, Z+
+000357 1122      		cpse r18, r2
+000358 d00d      		rcall SetPixel
+000359 9611      		adiw X, 1
                  
-00029c 9125      		lpm r18, Z+
-00029d 1122      		cpse r18, r2
-00029e d009      		rcall SetPixel
-00029f 9611      		adiw X, 1
+00035a 9125      		lpm r18, Z+
+00035b 1122      		cpse r18, r2
+00035c d009      		rcall SetPixel
+00035d 9611      		adiw X, 1
                  
-0002a0 9125      		lpm r18, Z+
-0002a1 1122      		cpse r18, r2
-0002a2 d005      		rcall SetPixel
+00035e 9125      		lpm r18, Z+
+00035f 1122      		cpse r18, r2
+000360 d005      		rcall SetPixel
                  		
-0002a3 9657      		adiw X, SCREEN_WIDTH-3
+000361 9657      		adiw X, SCREEN_WIDTH-3
                  
-0002a4 951a      		dec r17
-0002a5 f009      		breq SetBlock_End
-0002a6 cfed      		rjmp loop_DrawBlock
+000362 951a      		dec r17
+000363 f009      		breq SetBlock_End
+000364 cfed      		rjmp loop_DrawBlock
                  
                  		SetBlock_End:
-0002a7 9508      		ret
+000365 9508      		ret
                  
                  
                  SetPixel:
-0002a8 932c      	st X, r18
-0002a9 9508      	ret
+000366 932c      	st X, r18
+000367 9508      	ret
                  
                  	
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1787,90 +2023,90 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ; r16 - color
                  ClearBlock:
                  
-0002aa 930f      	push r16
-0002ab 9100 0420 	lds r16, block_y
-0002ad eea4      		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
-0002ae e0b0      		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
+000368 930f      	push r16
+000369 9100 0420 	lds r16, block_y
+00036b eea1      		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
+00036c e0b0      		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
                  
-0002af 3000      	cpi r16, 0
-0002b0 f021      	breq loop_ClearBlock_
+00036d 3000      	cpi r16, 0
+00036e f021      	breq loop_ClearBlock_
                  	
                  	loop_ClearBlock:
                  
-0002b1 965a      		adiw X, SCREEN_WIDTH
+00036f 965a      		adiw X, SCREEN_WIDTH
                  
-0002b2 950a      		dec r16            ; 1 clk
-0002b3 f009      		breq loop_ClearBlock_    ; 1/2 clk
-0002b4 cffc      		rjmp loop_ClearBlock     ; 2 clk
+000370 950a      		dec r16            ; 1 clk
+000371 f009      		breq loop_ClearBlock_    ; 1/2 clk
+000372 cffc      		rjmp loop_ClearBlock     ; 2 clk
                  
                  	loop_ClearBlock_:
                  
                  
-0002b5 9100 0421 		lds r16, block_x
-0002b7 0fa0      		add Xl, r16
-0002b8 e000      		ldi r16, 0
-0002b9 1fb0      		adc Xh, r16
-0002ba 910f      		pop r16
+000373 9100 0421 		lds r16, block_x
+000375 0fa0      		add Xl, r16
+000376 e000      		ldi r16, 0
+000377 1fb0      		adc Xh, r16
+000378 910f      		pop r16
                  		
                  
-0002bb e2ec      		ldi Zl, LOW(2*BLOCK_START)
-0002bc e0f9      		ldi Zh, HIGH(2*BLOCK_START)
+000379 e1e8      		ldi Zl, LOW(2*BLOCK_START)
+00037a e0fd      		ldi Zh, HIGH(2*BLOCK_START)
                  
-0002bd e420      		ldi r18, 64
-0002be 9110 0423 		lds r17, block_type
+00037b e420      		ldi r18, 64
+00037c 9110 0423 		lds r17, block_type
                  		; block type * 16
                  		; 4x line
-0002c0 9f12      		mul r17, r18
+00037e 9f12      		mul r17, r18
                  
                  		
-0002c1 9120 0424 		lds r18, block_rotation
-0002c3 0f22      		lsl r18
-0002c4 0f22      		lsl r18
-0002c5 0f22      		lsl r18
-0002c6 0f22      		lsl r18
-0002c7 0e02      		add r0, r18
-0002c8 1c12      		adc r1, r2
+00037f 9120 0424 		lds r18, block_rotation
+000381 0f22      		lsl r18
+000382 0f22      		lsl r18
+000383 0f22      		lsl r18
+000384 0f22      		lsl r18
+000385 0e02      		add r0, r18
+000386 1c12      		adc r1, r2
                  
-0002c9 0de0      		add Zl, r0
-0002ca 1df1      		adc Zh, r1
+000387 0de0      		add Zl, r0
+000388 1df1      		adc Zh, r1
                  
                  
                  
-0002cb e014      		ldi r17, 4
+000389 e014      		ldi r17, 4
                  	loop_Draw_ClearBlock:
-0002cc 9125      		lpm r18, Z+
+00038a 9125      		lpm r18, Z+
                  		
-0002cd 1122      		cpse r18, r2
-0002ce d011      		rcall SetPixel2
-0002cf 9611      		adiw X, 1
+00038b 1122      		cpse r18, r2
+00038c d011      		rcall SetPixel2
+00038d 9611      		adiw X, 1
                  
-0002d0 9125      		lpm r18, Z+
-0002d1 1122      		cpse r18, r2
-0002d2 d00d      		rcall SetPixel2
-0002d3 9611      		adiw X, 1
+00038e 9125      		lpm r18, Z+
+00038f 1122      		cpse r18, r2
+000390 d00d      		rcall SetPixel2
+000391 9611      		adiw X, 1
                  
-0002d4 9125      		lpm r18, Z+
-0002d5 1122      		cpse r18, r2
-0002d6 d009      		rcall SetPixel2
-0002d7 9611      		adiw X, 1
+000392 9125      		lpm r18, Z+
+000393 1122      		cpse r18, r2
+000394 d009      		rcall SetPixel2
+000395 9611      		adiw X, 1
                  
-0002d8 9125      		lpm r18, Z+
-0002d9 1122      		cpse r18, r2
-0002da d005      		rcall SetPixel2
+000396 9125      		lpm r18, Z+
+000397 1122      		cpse r18, r2
+000398 d005      		rcall SetPixel2
                  		
-0002db 9657      		adiw X, SCREEN_WIDTH-3
+000399 9657      		adiw X, SCREEN_WIDTH-3
                  
-0002dc 951a      		dec r17
-0002dd f009      		breq ClearBlock_End
-0002de cfed      		rjmp loop_Draw_ClearBlock
+00039a 951a      		dec r17
+00039b f009      		breq ClearBlock_End
+00039c cfed      		rjmp loop_Draw_ClearBlock
                  
                  		ClearBlock_End:
-0002df 9508      		ret
+00039d 9508      		ret
                  
                  
                  SetPixel2:
-0002e0 922c      	st X, r2
-0002e1 9508      	ret
+00039e 922c      	st X, r2
+00039f 9508      	ret
                  /*
                  SetBlock:
                  
@@ -1954,217 +2190,240 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  SetPixel:
                  	st X, r16
                  	ret*/
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                 PauseGame:
+0003a0 feb4      		sbrs r11, 4
+0003a1 c001      		rjmp PauseGame_Begin
+0003a2 9508      		ret
+                 
+                 PauseGame_Begin:
+0003a3 9100 0426 	lds r16, gameover
+0003a5 3f0f      	cpi r16, 0xff
+0003a6 f041      	breq Pause_uciekamy
+0003a7 9100 0425 	lds r16, pause
+0003a9 ef1f      	ldi r17, 0xff
+0003aa 2701      	eor r16, r17
+                 
+0003ab 9300 0425 	sts pause, r16
+                 
+0003ad e11d      	ldi r17, 29
+                 
+0003ae 2e51      	mov r5, r17
+                 Pause_uciekamy:
+0003af 9508      	ret
+                 
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  RotateRight:
-0002e2 feb7      		sbrs r11, 7
-0002e3 c001      		rjmp RotateRight_Begin
-0002e4 9508      		ret
+0003b0 feb7      		sbrs r11, 7
+0003b1 c001      		rjmp RotateRight_Begin
+0003b2 9508      		ret
                  
                  RotateRight_Begin:
                  
-0002e5 e000      	ldi r16, 0
-0002e6 dfc3      	rcall ClearBlock
+0003b3 e000      	ldi r16, 0
+0003b4 dfb3      	rcall ClearBlock
                  
-0002e7 9100 0424 	lds r16, block_rotation
-0002e9 930f      	push r16
-0002ea 9503      	inc r16
-0002eb 3004      	cpi r16, 4
-0002ec f480      	brsh RotateRight_Reset
+0003b5 9100 0424 	lds r16, block_rotation
+0003b7 930f      	push r16
+0003b8 9503      	inc r16
+0003b9 3004      	cpi r16, 4
+0003ba f480      	brsh RotateRight_Reset
                  
                  RotateRight_Continue:
                  
-0002ed 9300 0424 	sts block_rotation, r16
+0003bb 9300 0424 	sts block_rotation, r16
                  
                  	
-0002ef 9100 0421 	lds r16, block_x
-0002f1 9110 0420 	lds r17, block_y
-0002f3 d0d1      	rcall check_collision
+0003bd 9100 0421 	lds r16, block_x
+0003bf 9110 0420 	lds r17, block_y
+0003c1 d0d1      	rcall check_collision
                  
-0002f4 3000      	cpi r16, 0
-0002f5 910f      	pop r16
+0003c2 3000      	cpi r16, 0
+0003c3 910f      	pop r16
                      
-0002f6 f011      	breq RotateRight_End 
+0003c4 f011      	breq RotateRight_End 
                  
-0002f7 9300 0424 	sts block_rotation, r16 ;prev rotation
+0003c5 9300 0424 	sts block_rotation, r16 ;prev rotation
                  
                  RotateRight_End:
-0002f9 9100 0422 	lds r16, block_color
-0002fb df76      	rcall SetBlock
-0002fc 9508      	ret
+0003c7 9100 0422 	lds r16, block_color
+0003c9 df66      	rcall SetBlock
+0003ca 9508      	ret
                  
                  RotateRight_Reset:
-0002fd e000      	ldi r16, 0
-0002fe cfee      	rjmp RotateRight_Continue
+0003cb e000      	ldi r16, 0
+0003cc cfee      	rjmp RotateRight_Continue
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  RotateLeft:
-0002ff feb6      		sbrs r11, 6
-000300 c001      		rjmp RotateLeft_Begin
-000301 9508      		ret
+0003cd feb6      		sbrs r11, 6
+0003ce c001      		rjmp RotateLeft_Begin
+0003cf 9508      		ret
                  
                  RotateLeft_Begin:
                  
-000302 e000      	ldi r16, 0
-000303 dfa6      	rcall ClearBlock
+0003d0 e000      	ldi r16, 0
+0003d1 df96      	rcall ClearBlock
                  	
-000304 9100 0424 	lds r16, block_rotation
-000306 930f      	push r16
-000307 950a      	dec r16
-000308 3f0f      	cpi r16, 255
-000309 f480      	brsh RotateLeft_Reset
+0003d2 9100 0424 	lds r16, block_rotation
+0003d4 930f      	push r16
+0003d5 950a      	dec r16
+0003d6 3f0f      	cpi r16, 255
+0003d7 f480      	brsh RotateLeft_Reset
                  
                  RotateLeft_Continue:
                  
-00030a 9300 0424 	sts block_rotation, r16
+0003d8 9300 0424 	sts block_rotation, r16
                  
                  	
-00030c 9100 0421 	lds r16, block_x
-00030e 9110 0420 	lds r17, block_y
-000310 d0b4      	rcall check_collision
+0003da 9100 0421 	lds r16, block_x
+0003dc 9110 0420 	lds r17, block_y
+0003de d0b4      	rcall check_collision
                  
-000311 3000      	cpi r16, 0
-000312 910f      	pop r16
-000313 f011      	breq RotateLeft_End
+0003df 3000      	cpi r16, 0
+0003e0 910f      	pop r16
+0003e1 f011      	breq RotateLeft_End
                  
-000314 9300 0424 	sts block_rotation, r16 ;prev rotation
+0003e2 9300 0424 	sts block_rotation, r16 ;prev rotation
                  
                  RotateLeft_End:
-000316 9100 0422 	lds r16, block_color
-000318 df59      	rcall SetBlock
-000319 9508      	ret
+0003e4 9100 0422 	lds r16, block_color
+0003e6 df49      	rcall SetBlock
+0003e7 9508      	ret
                  
                  RotateLeft_Reset:
-00031a e003      	ldi r16, 3
-00031b cfd1      	rjmp RotateRight_Continue
+0003e8 e003      	ldi r16, 3
+0003e9 cfd1      	rjmp RotateRight_Continue
                  
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  MoveRight:
-00031c feb0      		sbrs r11, 0 
-00031d c001      		rjmp MoveRight_Begin
-00031e 9508      		ret
+0003ea feb0      		sbrs r11, 0 
+0003eb c001      		rjmp MoveRight_Begin
+0003ec 9508      		ret
                  
                  MoveRight_Begin:
                  
-00031f e000      	ldi r16, 0
-000320 df89      	rcall ClearBlock
+0003ed e000      	ldi r16, 0
+0003ee df79      	rcall ClearBlock
                  
-000321 9100 0421 	lds r16, block_x
-000323 9110 0420 	lds r17, block_y
-000325 9503      	inc r16
+0003ef 9100 0421 	lds r16, block_x
+0003f1 9110 0420 	lds r17, block_y
+0003f3 9503      	inc r16
                  
-000326 d09e      	rcall check_collision
-                 
-                 
-000327 3000      	cpi r16, 0
-000328 f021      	breq MoveRightContinue
+0003f4 d09e      	rcall check_collision
                  
                  
-000329 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
-00032b df46      	rcall SetBlock
+0003f5 3000      	cpi r16, 0
+0003f6 f021      	breq MoveRightContinue
                  
-00032c 9508      	ret
+                 
+0003f7 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
+0003f9 df36      	rcall SetBlock
+                 
+0003fa 9508      	ret
                  
                  MoveRightContinue:
                  
-00032d 9100 0421 	lds r16, block_x
-00032f 9503      	inc r16
-000330 9300 0421 	sts block_x, r16
+0003fb 9100 0421 	lds r16, block_x
+0003fd 9503      	inc r16
+0003fe 9300 0421 	sts block_x, r16
                  
-000332 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
-000334 df3d      	rcall SetBlock
+000400 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
+000402 df2d      	rcall SetBlock
                  
-000335 9508      	ret
+000403 9508      	ret
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  MoveLeft:
-000336 feb1      		sbrs r11, 1 ; A
-000337 c001      		rjmp MoveLeft_Begin
-000338 9508      		ret
+000404 feb1      		sbrs r11, 1 ; A
+000405 c001      		rjmp MoveLeft_Begin
+000406 9508      		ret
                  
                  MoveLeft_Begin:
                  
-000339 e000      	ldi r16, 0
-00033a df6f      	rcall ClearBlock
+000407 e000      	ldi r16, 0
+000408 df5f      	rcall ClearBlock
                  
-00033b 9100 0421 	lds r16, block_x
-00033d 9110 0420 	lds r17, block_y
-00033f 950a      	dec r16
+000409 9100 0421 	lds r16, block_x
+00040b 9110 0420 	lds r17, block_y
+00040d 950a      	dec r16
                  
-000340 d084      	rcall check_collision
-                 
-                 
-000341 3000      	cpi r16, 0
-000342 f021      	breq MoveLeftContinue
+00040e d084      	rcall check_collision
                  
                  
-000343 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
-000345 df2c      	rcall SetBlock
+00040f 3000      	cpi r16, 0
+000410 f021      	breq MoveLeftContinue
                  
-000346 9508      	ret
+                 
+000411 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
+000413 df1c      	rcall SetBlock
+                 
+000414 9508      	ret
                  	
                  MoveLeftContinue:
                  	
-000347 e000      	ldi r16, 0  ; Delete prev block
-000348 df61      	rcall ClearBlock
+000415 e000      	ldi r16, 0  ; Delete prev block
+000416 df51      	rcall ClearBlock
                  
-000349 9100 0421 	lds r16, block_x
-00034b 950a      	dec r16
-00034c 9300 0421 	sts block_x, r16
+000417 9100 0421 	lds r16, block_x
+000419 950a      	dec r16
+00041a 9300 0421 	sts block_x, r16
                  
-00034e 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
-000350 df21      	rcall SetBlock
+00041c 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
+00041e df11      	rcall SetBlock
                  
-000351 9508      	ret
+00041f 9508      	ret
                  
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  MoveDown:
                  		;sbrs r11, 2 
-000352 c001      		rjmp MoveDown_Begin
-000353 9508      		ret
+000420 c001      		rjmp MoveDown_Begin
+000421 9508      		ret
                  
                  
                  MoveDown_Begin:
                  
-000354 e000      	ldi r16, 0
-000355 df54      	rcall ClearBlock
+000422 e000      	ldi r16, 0
+000423 df44      	rcall ClearBlock
                  
-000356 9100 0421 	lds r16, block_x
-000358 9110 0420 	lds r17, block_y
-00035a 9513      	inc r17
+000424 9100 0421 	lds r16, block_x
+000426 9110 0420 	lds r17, block_y
+000428 9513      	inc r17
                  
-00035b d069      	rcall check_collision
-                 
-                 
-00035c 3000      	cpi r16, 0
-00035d f031      	breq MoveDownContinue
+000429 d069      	rcall check_collision
                  
                  
-00035e 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
-000360 df11      	rcall SetBlock
+00042a 3000      	cpi r16, 0
+00042b f031      	breq MoveDownContinue
                  
-000361 e10d      	ldi r16, 29
-000362 2e50      	mov r5, r16
                  
-000363 9508      	ret
+00042c 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
+00042e df01      	rcall SetBlock
+                 
+00042f e10d      	ldi r16, 29
+000430 2e50      	mov r5, r16
+                 
+000431 9508      	ret
                  
                  MoveDownContinue:
                  
-000364 9100 0420 	lds r16, block_y
-000366 9503      	inc r16
-000367 9300 0420 	sts block_y, r16
+000432 9100 0420 	lds r16, block_y
+000434 9503      	inc r16
+000435 9300 0420 	sts block_y, r16
                  
-000369 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
-00036b df06      	rcall SetBlock
+000437 9100 0422 	lds r16, BLOCK_COLOR ; Set curr block
+000439 def6      	rcall SetBlock
                  
-00036c 9508      	ret
+00043a 9508      	ret
                  
                  /*
                  		DrawMap
@@ -2172,61 +2431,61 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  DrawMap:
-00036d e00d      		ldi r16, 13
-00036e ecad      		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*4 )
-00036f e0b0      		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*4 )
-000370 e312      		ldi r17, 50
-000371 931d      		st X+, r17
-000372 e313      		ldi r17, 51
+00043b e00d      		ldi r16, 13
+00043c ecaa      		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*4 )
+00043d e0b0      		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*4 )
+00043e e312      		ldi r17, 50
+00043f 931d      		st X+, r17
+000440 e313      		ldi r17, 51
                  	hor_loop_1:
                  
-000373 931d      		st X+, r17
-000374 950a      		dec r16            ; 1 clk
-000375 f009      		breq hor_loop_1_end    ; 1/2 clk
-000376 cffc      		rjmp hor_loop_1     ; 2 clk
+000441 931d      		st X+, r17
+000442 950a      		dec r16            ; 1 clk
+000443 f009      		breq hor_loop_1_end    ; 1/2 clk
+000444 cffc      		rjmp hor_loop_1     ; 2 clk
                  
                  	hor_loop_1_end:
-000377 e314      		ldi r17, 52
-000378 931d      		st X+, r17
+000445 e314      		ldi r17, 52
+000446 931d      		st X+, r17
                  
-000379 e105      		ldi r16, 21
-00037a eea7      		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 )
-00037b e0b0      		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 )
+000447 e105      		ldi r16, 21
+000448 eea4      		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 )
+000449 e0b0      		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 )
                  
                  	ver_loop:
                  
                  
-00037c e315      		ldi r17, 53
-00037d 931c      		st X, r17
-00037e 961e      		adiw X, 14
-00037f 931c      		st X, r17
-000380 961c      		adiw X, SCREEN_WIDTH-14
+00044a e315      		ldi r17, 53
+00044b 931c      		st X, r17
+00044c 961e      		adiw X, 14
+00044d 931c      		st X, r17
+00044e 961c      		adiw X, SCREEN_WIDTH-14
                  
                  
-000381 950a      		dec r16            ; 1 clk
-000382 f009      		breq ver_loop_end    ; 1/2 clk
-000383 cff8      		rjmp ver_loop     ; 2 clk
+00044f 950a      		dec r16            ; 1 clk
+000450 f009      		breq ver_loop_end    ; 1/2 clk
+000451 cff8      		rjmp ver_loop     ; 2 clk
                  
                  	ver_loop_end:
                  
-000384 e00d      		ldi r16, 13
-000385 e0a9      		ldi Xl, LOW( 96+MAP_X + (SCREEN_WIDTH*26) )
-000386 e0b3      		ldi Xh, HIGH( 96+MAP_X + (SCREEN_WIDTH*26) )
-000387 e316      		ldi r17, 54
-000388 931d      		st X+, r17
-000389 e313      		ldi r17, 51
+000452 e00d      		ldi r16, 13
+000453 e0a6      		ldi Xl, LOW( 96+MAP_X + (SCREEN_WIDTH*26) )
+000454 e0b3      		ldi Xh, HIGH( 96+MAP_X + (SCREEN_WIDTH*26) )
+000455 e316      		ldi r17, 54
+000456 931d      		st X+, r17
+000457 e313      		ldi r17, 51
                  	hor_loop_2:
                  
-00038a 931d      		st X+, r17
+000458 931d      		st X+, r17
                  
-00038b 950a      		dec r16            ; 1 clk
-00038c f009      		breq DrawMap_    ; 1/2 clk
-00038d cffc      		rjmp hor_loop_2     ; 2 clk
+000459 950a      		dec r16            ; 1 clk
+00045a f009      		breq DrawMap_    ; 1/2 clk
+00045b cffc      		rjmp hor_loop_2     ; 2 clk
                  
                  DrawMap_:
-00038e e317      	ldi r17, 55
-00038f 931d      	st X+, r17
-000390 9508      	ret
+00045c e317      	ldi r17, 55
+00045d 931d      	st X+, r17
+00045e 9508      	ret
                  
                  
                  /*
@@ -2235,30 +2494,30 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  DebugDrawCorners:
-000391 e001      	ldi r16, 0b1
+00045f e001      	ldi r16, 0b1
                  
-000392 e6a0      	ldi Xl, LOW( 96 )
-000393 e0b0      	ldi Xh, HIGH( 96 )
-000394 930c      	st X, r16
-                 
-                 
-000395 e002      	ldi r16, 0b10
-000396 e7a9      	ldi Xl, LOW( 96+SCREEN_WIDTH-1)
-000397 e0b0      	ldi Xh, HIGH( 96+SCREEN_WIDTH-1)
-000398 930c      	st X, r16
+000460 e6a0      	ldi Xl, LOW( 96 )
+000461 e0b0      	ldi Xh, HIGH( 96 )
+000462 930c      	st X, r16
                  
                  
-000399 e001      	ldi r16, 0b1
-00039a e5a2      	ldi Xl, LOW( 96 +(SCREEN_WIDTH*29) )
-00039b e0b3      	ldi Xh, HIGH( 96 +(SCREEN_WIDTH*29))
-00039c 930c      	st X, r16
+000463 e002      	ldi r16, 0b10
+000464 e7a9      	ldi Xl, LOW( 96+SCREEN_WIDTH-1)
+000465 e0b0      	ldi Xh, HIGH( 96+SCREEN_WIDTH-1)
+000466 930c      	st X, r16
                  
-00039d e002      	ldi r16, 0b10
-00039e e6ab      	ldi Xl, LOW( 96 +(SCREEN_WIDTH*29) +SCREEN_WIDTH-1)
-00039f e0b3      	ldi Xh, HIGH( 96 +(SCREEN_WIDTH*29)+SCREEN_WIDTH-1)
-0003a0 930c      	st X, r16
                  
-0003a1 9508      	ret
+000467 e001      	ldi r16, 0b1
+000468 e5a2      	ldi Xl, LOW( 96 +(SCREEN_WIDTH*29) )
+000469 e0b3      	ldi Xh, HIGH( 96 +(SCREEN_WIDTH*29))
+00046a 930c      	st X, r16
+                 
+00046b e002      	ldi r16, 0b10
+00046c e6ab      	ldi Xl, LOW( 96 +(SCREEN_WIDTH*29) +SCREEN_WIDTH-1)
+00046d e0b3      	ldi Xh, HIGH( 96 +(SCREEN_WIDTH*29)+SCREEN_WIDTH-1)
+00046e 930c      	st X, r16
+                 
+00046f 9508      	ret
                  
                  /*
                  		ClearScreen
@@ -2266,21 +2525,21 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ClearScreen:
-0003a2 ef00      	ldi r16, 240
-0003a3 27bb      	clr Xh
-0003a4 e6a0      	ldi Xl, 0x60
+000470 ef00      	ldi r16, 240
+000471 27bb      	clr Xh
+000472 e6a0      	ldi Xl, 0x60
                  
                  	ClearLoop:
-0003a5 922d      	st X+, r2
-0003a6 922d      	st X+, r2
-0003a7 922d      	st X+, r2
-0003a8 922d      	st X+, r2
-0003a9 950a      	dec r16            ; 1 clk
-0003aa f009      	breq ClearLoop_    ; 1/2 clk
-0003ab cff9      	rjmp ClearLoop     ; 2 clk
+000473 922d      	st X+, r2
+000474 922d      	st X+, r2
+000475 922d      	st X+, r2
+000476 922d      	st X+, r2
+000477 950a      	dec r16            ; 1 clk
+000478 f009      	breq ClearLoop_    ; 1/2 clk
+000479 cff9      	rjmp ClearLoop     ; 2 clk
                  
                  ClearLoop_:
-0003ac 9508      	ret
+00047a 9508      	ret
                  
                  
                  /*
@@ -2289,134 +2548,133 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ClearMap:
-0003ad e105      	ldi r16, 21
-0003ae eea8      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
-0003af e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+00047b e105      	ldi r16, 21
+00047c eea5      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+00047d e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
                  
-0003b0 e010      	ldi r17, 0b0000
+00047e e010      	ldi r17, 0b0000
                  	ClearMapLoop:
-0003b1 931d      	st X+, r17
-0003b2 931d      	st X+, r17
-0003b3 931d      	st X+, r17
-0003b4 931d      	st X+, r17
-0003b5 931d      	st X+, r17
-0003b6 931d      	st X+, r17
-0003b7 931d      	st X+, r17
-0003b8 931d      	st X+, r17
-0003b9 931d      	st X+, r17
-0003ba 931d      	st X+, r17
-0003bb 931d      	st X+, r17
-0003bc 931d      	st X+, r17
-0003bd 931c      	st X, r17
+00047f 931d      	st X+, r17
+000480 931d      	st X+, r17
+000481 931d      	st X+, r17
+000482 931d      	st X+, r17
+000483 931d      	st X+, r17
+000484 931d      	st X+, r17
+000485 931d      	st X+, r17
+000486 931d      	st X+, r17
+000487 931d      	st X+, r17
+000488 931d      	st X+, r17
+000489 931d      	st X+, r17
+00048a 931d      	st X+, r17
+00048b 931c      	st X, r17
                  
-0003be 961e      	adiw X, SCREEN_WIDTH-12
+00048c 961e      	adiw X, SCREEN_WIDTH-12
                  
-0003bf 950a      	dec r16            ; 1 clk
-0003c0 f009      	breq ClearMapLoop_    ; 1/2 clk
-0003c1 cfef      	rjmp ClearMapLoop     ; 2 clk
+00048d 950a      	dec r16            ; 1 clk
+00048e f009      	breq ClearMapLoop_    ; 1/2 clk
+00048f cfef      	rjmp ClearMapLoop     ; 2 clk
                  
                  ClearMapLoop_:
-0003c2 9220 0420 	sts block_y, r2
-                 
-0003c4 9508      	ret
+000490 9220 0420 	sts block_y, r2
+000492 9508      	ret
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                  ; r16 - x, r17 - y
                  check_collision:
-0003c5 e12a      	ldi r18, SCREEN_WIDTH
-0003c6 9f21      	mul r18, r17
+000493 e12a      	ldi r18, SCREEN_WIDTH
+000494 9f21      	mul r18, r17
                  	
-0003c7 eea4      	ldi Xl, LOW( 96 + MAP_X+ (5*SCREEN_WIDTH)+1  - X_DELTA)
-0003c8 e0b0      	ldi Xh, HIGH( 96 + MAP_X+ (5*SCREEN_WIDTH)+1  - X_DELTA)
+000495 eea1      	ldi Xl, LOW( 96 + MAP_X+ (5*SCREEN_WIDTH)+1  - X_DELTA)
+000496 e0b0      	ldi Xh, HIGH( 96 + MAP_X+ (5*SCREEN_WIDTH)+1  - X_DELTA)
                  
-0003c9 0e0a      	add r0, Xl
-0003ca 1e1b      	adc r1, Xh
+000497 0e0a      	add r0, Xl
+000498 1e1b      	adc r1, Xh
                  
-0003cb 0e00      	add r0, r16
-0003cc 1c12      	adc r1, r2
+000499 0e00      	add r0, r16
+00049a 1c12      	adc r1, r2
                  
                  
-0003cd 2da0      	mov Xl, r0
-0003ce 2db1      	mov Xh, r1
+00049b 2da0      	mov Xl, r0
+00049c 2db1      	mov Xh, r1
                  
                  	;; Flash pointer of block
                  
                  
-0003cf e2ec      	ldi Zl, LOW(2*BLOCK_START)
-0003d0 e0f9      	ldi Zh, HIGH(2*BLOCK_START)
+00049d e1e8      	ldi Zl, LOW(2*BLOCK_START)
+00049e e0fd      	ldi Zh, HIGH(2*BLOCK_START)
                  
                  
                  
-0003d1 e420      	ldi r18, 64
-0003d2 9110 0423 	lds r17, block_type
+00049f e420      	ldi r18, 64
+0004a0 9110 0423 	lds r17, block_type
                  	; block type * 16
                  	; 4x line
-0003d4 9f12      	mul r17, r18
+0004a2 9f12      	mul r17, r18
                  
                  	
-0003d5 9120 0424 	lds r18, block_rotation
-0003d7 0f22      	lsl r18
-0003d8 0f22      	lsl r18
-0003d9 0f22      	lsl r18
-0003da 0f22      	lsl r18
-0003db 0e02      	add r0, r18
-0003dc 1c12      	adc r1, r2
+0004a3 9120 0424 	lds r18, block_rotation
+0004a5 0f22      	lsl r18
+0004a6 0f22      	lsl r18
+0004a7 0f22      	lsl r18
+0004a8 0f22      	lsl r18
+0004a9 0e02      	add r0, r18
+0004aa 1c12      	adc r1, r2
                  
-0003dd 0de0      	add Zl, r0
-0003de 1df1      	adc Zh, r1
+0004ab 0de0      	add Zl, r0
+0004ac 1df1      	adc Zh, r1
                  
-0003df 2733      	clr r19
+0004ad 2733      	clr r19
                  
                  	; for (y;y<4;y++)
                  	; for (x;x<4;x++)
                  
-0003e0 e014      		ldi r17, 4
+0004ae e014      		ldi r17, 4
                  	loop_CheckBlock:
-0003e1 9125      		lpm r18, Z+
+0004af 9125      		lpm r18, Z+
                  
-0003e2 1122      		cpse r18, r2
-0003e3 d012      		rcall CheckPixel
-0003e4 9611      		adiw X, 1
+0004b0 1122      		cpse r18, r2
+0004b1 d012      		rcall CheckPixel
+0004b2 9611      		adiw X, 1
                  
-0003e5 9125      		lpm r18, Z+
-0003e6 1122      		cpse r18, r2
-0003e7 d00e      		rcall CheckPixel
-0003e8 9611      		adiw X, 1
+0004b3 9125      		lpm r18, Z+
+0004b4 1122      		cpse r18, r2
+0004b5 d00e      		rcall CheckPixel
+0004b6 9611      		adiw X, 1
                  
-0003e9 9125      		lpm r18, Z+
-0003ea 1122      		cpse r18, r2
-0003eb d00a      		rcall CheckPixel
-0003ec 9611      		adiw X, 1
+0004b7 9125      		lpm r18, Z+
+0004b8 1122      		cpse r18, r2
+0004b9 d00a      		rcall CheckPixel
+0004ba 9611      		adiw X, 1
                  
-0003ed 9125      		lpm r18, Z+
-0003ee 1122      		cpse r18, r2
-0003ef d006      		rcall CheckPixel
+0004bb 9125      		lpm r18, Z+
+0004bc 1122      		cpse r18, r2
+0004bd d006      		rcall CheckPixel
                  		
-0003f0 9657      		adiw X, SCREEN_WIDTH-3
+0004be 9657      		adiw X, SCREEN_WIDTH-3
                  
-0003f1 951a      		dec r17
-0003f2 f009      		breq CheckBlock_End
-0003f3 cfed      		rjmp loop_CheckBlock
+0004bf 951a      		dec r17
+0004c0 f009      		breq CheckBlock_End
+0004c1 cfed      		rjmp loop_CheckBlock
                  
                  		CheckBlock_End:
-0003f4 2f03      		mov r16, r19
-0003f5 9508      		ret
+0004c2 2f03      		mov r16, r19
+0004c3 9508      		ret
                  
                  
                  CheckPixel:
-0003f6 910c      	ld r16, X
-0003f7 3000      	cpi r16, 0x00
+0004c4 910c      	ld r16, X
+0004c5 3000      	cpi r16, 0x00
                  
-0003f8 f011      	breq CheckPixel_no; no collision
+0004c6 f011      	breq CheckPixel_no; no collision
                  
                  	; Collision
-0003f9 ef3f      	ldi r19, 0xff
+0004c7 ef3f      	ldi r19, 0xff
                  
-0003fa 9508      	ret
+0004c8 9508      	ret
                  
                  CheckPixel_no:
-0003fb 9508      	ret
+0004c9 9508      	ret
                  
                  
                  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -2424,169 +2682,615 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ; r17 - y
                  ; ret - 0 - holes, 0xff - full
                  check_line:
-0003fc e12a      	ldi r18, SCREEN_WIDTH
-0003fd 9f21      	mul r18, r17
+0004ca e12a      	ldi r18, SCREEN_WIDTH
+0004cb 9f21      	mul r18, r17
                  	
-0003fe eea8      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
-0003ff e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+0004cc eea5      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+0004cd e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
                  
-000400 0e0a      	add r0, Xl
-000401 1e1b      	adc r1, Xh
+0004ce 0e0a      	add r0, Xl
+0004cf 1e1b      	adc r1, Xh
                  
-000402 2da0      	mov Xl, r0
-000403 2db1      	mov Xh, r1
+0004d0 2da0      	mov Xl, r0
+0004d1 2db1      	mov Xh, r1
                  
-000404 ef3f      	ser r19
+0004d2 ef3f      	ser r19
                  
                  	; for (x;x<12;x++)
                  
-000405 e01d      		ldi r17, 13
+0004d3 e01d      		ldi r17, 13
                  	loop_check_line:
-000406 910d      		ld r16, X+
-000407 3000      		cpi r16, 0
-000408 f019      		breq CheckLine_false
+0004d4 910d      		ld r16, X+
+0004d5 3000      		cpi r16, 0
+0004d6 f019      		breq CheckLine_false
                  
-000409 951a      		dec r17
-00040a f011      		breq CheckLine_end
-00040b cffa      		rjmp loop_check_line
+0004d7 951a      		dec r17
+0004d8 f011      		breq CheckLine_end
+0004d9 cffa      		rjmp loop_check_line
                  
                  		CheckLine_false:
-00040c 2733      		clr r19
+0004da 2733      		clr r19
                  
                  		CheckLine_end:
-00040d 2f03      		mov r16, r19
-00040e 9508      		ret
+0004db 2f03      		mov r16, r19
+0004dc 9508      		ret
                  
                  ; r17 - y	
                  ClearLine:
-00040f e12a      	ldi r18, SCREEN_WIDTH
-000410 9f21      	mul r18, r17
+0004dd e12a      	ldi r18, SCREEN_WIDTH
+0004de 9f21      	mul r18, r17
                  
-000411 eea8      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
-000412 e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+0004df eea5      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+0004e0 e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
                  
-000413 0e0a      	add r0, Xl
-000414 1e1b      	adc r1, Xh
+0004e1 0e0a      	add r0, Xl
+0004e2 1e1b      	adc r1, Xh
                  
-000415 2da0      	mov Xl, r0
-000416 2db1      	mov Xh, r1
+0004e3 2da0      	mov Xl, r0
+0004e4 2db1      	mov Xh, r1
                  
-000417 922d      	st X+, r2
-000418 922d      	st X+, r2
-000419 922d      	st X+, r2
-00041a 922d      	st X+, r2
-00041b 922d      	st X+, r2
-00041c 922d      	st X+, r2
-00041d 922d      	st X+, r2
-00041e 922d      	st X+, r2
-00041f 922d      	st X+, r2
-000420 922d      	st X+, r2
-000421 922d      	st X+, r2
-000422 922d      	st X+, r2
-000423 922c      	st X, r2
+0004e5 922d      	st X+, r2
+0004e6 922d      	st X+, r2
+0004e7 922d      	st X+, r2
+0004e8 922d      	st X+, r2
+0004e9 922d      	st X+, r2
+0004ea 922d      	st X+, r2
+0004eb 922d      	st X+, r2
+0004ec 922d      	st X+, r2
+0004ed 922d      	st X+, r2
+0004ee 922d      	st X+, r2
+0004ef 922d      	st X+, r2
+0004f0 922d      	st X+, r2
+0004f1 922c      	st X, r2
                  
-000424 9508      	ret
+0004f2 9508      	ret
                  
                  ; r17 - line cleared
                  MoveLine:
-000425 e12a      	ldi r18, SCREEN_WIDTH
-000426 9f21      	mul r18, r17
+0004f3 e12a      	ldi r18, SCREEN_WIDTH
+0004f4 9f21      	mul r18, r17
                  
-000427 eea8      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
-000428 e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+0004f5 eea5      	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+0004f6 e0b0      	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
                  
-000429 0e0a      	add r0, Xl
-00042a 1e1b      	adc r1, Xh
+0004f7 0e0a      	add r0, Xl
+0004f8 1e1b      	adc r1, Xh
                  
-00042b 2da0      	mov Xl, r0
-00042c 2db1      	mov Xh, r1
+0004f9 2da0      	mov Xl, r0
+0004fa 2db1      	mov Xh, r1
                  
-00042d 2fea      	mov Zl, Xl
-00042e 2ffb      	mov Zh, Xh
+0004fb 2fea      	mov Zl, Xl
+0004fc 2ffb      	mov Zh, Xh
                  
-00042f 977a      	sbiw Z, SCREEN_WIDTH
+0004fd 977a      	sbiw Z, SCREEN_WIDTH
                  
-000430 9101      	ld r16, Z+
-000431 930d      	st X+, r16
-                 
-                 
-000432 9101      	ld r16, Z+
-000433 930d      	st X+, r16
-                 
-000434 9101      	ld r16, Z+
-000435 930d      	st X+, r16
-                 
-000436 9101      	ld r16, Z+
-000437 930d      	st X+, r16
-                 
-000438 9101      	ld r16, Z+
-000439 930d      	st X+, r16
-                 
-00043a 9101      	ld r16, Z+
-00043b 930d      	st X+, r16
-                 
-00043c 9101      	ld r16, Z+
-00043d 930d      	st X+, r16
-                 
-00043e 9101      	ld r16, Z+
-00043f 930d      	st X+, r16
-                 
-000440 9101      	ld r16, Z+
-000441 930d      	st X+, r16
-                 
-000442 9101      	ld r16, Z+
-000443 930d      	st X+, r16
-                 
-000444 9101      	ld r16, Z+
-000445 930d      	st X+, r16
-                 
-000446 9101      	ld r16, Z+
-000447 930d      	st X+, r16
-                 
-000448 9101      	ld r16, Z+
-000449 930d      	st X+, r16
-                 
-00044a 9508      	ret
+0004fe 9101      	ld r16, Z+
+0004ff 930d      	st X+, r16
                  
                  
+000500 9101      	ld r16, Z+
+000501 930d      	st X+, r16
+                 
+000502 9101      	ld r16, Z+
+000503 930d      	st X+, r16
+                 
+000504 9101      	ld r16, Z+
+000505 930d      	st X+, r16
+                 
+000506 9101      	ld r16, Z+
+000507 930d      	st X+, r16
+                 
+000508 9101      	ld r16, Z+
+000509 930d      	st X+, r16
+                 
+00050a 9101      	ld r16, Z+
+00050b 930d      	st X+, r16
+                 
+00050c 9101      	ld r16, Z+
+00050d 930d      	st X+, r16
+                 
+00050e 9101      	ld r16, Z+
+00050f 930d      	st X+, r16
+                 
+000510 9101      	ld r16, Z+
+000511 930d      	st X+, r16
+                 
+000512 9101      	ld r16, Z+
+000513 930d      	st X+, r16
+                 
+000514 9101      	ld r16, Z+
+000515 930d      	st X+, r16
+                 
+000516 9101      	ld r16, Z+
+000517 930d      	st X+, r16
+                 
+000518 9508      	ret
+                 
+                 ; r16 - x
+                 ; r17 - y
+                 ; Z - string
+                 DrawString:
+000519 e12a      	ldi r18, SCREEN_WIDTH
+00051a 9f12      	mul r17, r18
+                 
+00051b 0e00      	add r0, r16
+00051c 1c12      	adc r1, r2
+                 
+00051d e6a0      	ldi Xl, LOW( 96 )
+00051e e0b0      	ldi Xh, HIGH( 96 )	
+                 
+00051f 0da0      	add Xl, r0
+000520 1db1      	adc Xh, r1
+                 
+                 
+                 	DrawStringLoop:
+000521 9115      	lpm r17, Z+
+000522 3010      	cpi r17, 0
+000523 f039      	breq DrawStringEnd
+000524 3210      	cpi r17, ' '
+000525 f031      	breq DrawSpace
+                 
+000526 521e      	subi r17, 46
+                 
+000527 e308      	ldi r16, 56
+000528 0f10      	add r17, r16
+000529 931d      	st X+, r17
+                 
+00052a cff6      	rjmp DrawStringLoop
+                 DrawStringEnd:
+00052b 9508      	ret
+                 
+                 DrawSpace:
+00052c 9611      	adiw X, 1
+00052d cff3      	rjmp DrawStringLoop
+                 
+                 ; r16 - x
+                 ; r17 - y
+                 ; r18 - char
+                 DrawChar:
+00052e 932f      	push r18
+00052f e12a      	ldi r18, SCREEN_WIDTH
+000530 9f12      	mul r17, r18
+                 
+000531 0e00      	add r0, r16
+000532 1c12      	adc r1, r2
+                 
+000533 e6a0      	ldi Xl, LOW( 96 )
+000534 e0b0      	ldi Xh, HIGH( 96 )	
+                 
+000535 0da0      	add Xl, r0
+000536 1db1      	adc Xh, r1
+000537 912f      	pop r18
+                 
+000538 522e      	subi r18, 46
+                 
+000539 e308      	ldi r16, 56
+00053a 0f20      	add r18, r16
+00053b 932d      	st X+, r18
+                 
+00053c 9508      	ret
+                 
+                 
+                 ; r16 - x (r align!)
+                 ; r17 - y
+                 ; r18 - number
+                 DrawNumber:
+00053d e13a      	ldi r19, SCREEN_WIDTH
+00053e 9f13      	mul r17, r19
+                 
+00053f 0e00      	add r0, r16
+000540 1c12      	adc r1, r2
+                 
+000541 e6a0      	ldi Xl, LOW( 96 )
+000542 e0b0      	ldi Xh, HIGH( 96 )	
+                 
+000543 0da0      	add Xl, r0
+000544 1db1      	adc Xh, r1
+                 
+                 	; x/10
+000545 2f02      	mov r16, r18
+000546 e01a      	ldi r17, 10
+000547 d013      	rcall divide
+                 
+000548 2f20      	mov r18, r16
+                 
+000549 e30a      	ldi r16, 56+2
+00054a 0f10      	add r17, r16
+00054b 931e      	st -X, r17
+                 
+                 
+                 	; x/10
+00054c 2f02      	mov r16, r18
+00054d e01a      	ldi r17, 10
+00054e d00c      	rcall divide
+                 
+00054f 2f20      	mov r18, r16
+                 
+000550 e30a      	ldi r16, 56+2
+000551 0f10      	add r17, r16
+000552 931e      	st -X, r17
+                 
+                 	
+                 	; x/10
+000553 2f02      	mov r16, r18
+000554 e01a      	ldi r17, 10
+000555 d005      	rcall divide
+                 
+000556 2f20      	mov r18, r16
+                 
+000557 e30a      	ldi r16, 56+2
+000558 0f10      	add r17, r16
+000559 931e      	st -X, r17
+                 
+00055a 9508      	ret
+                 
+                 
+                 ; r16 - a
+                 ; r17 - b 
+                 ;
+                 ; a/b = X
+                 ; a%b = y
+                 ;
+                 ; r16 - X
+                 ; r17 - y
+                 divide:
+00055b 932f      push r18
+00055c e020      	ldi r18, 0
+                 
+                 div_loop:
+00055d 1701      	cp r16, r17 ; if a>b, divide
+00055e f410      	brsh div_
+00055f f020      	brlo mod_
+                 
+000560 cffc      	rjmp div_loop
+                 
+                 
+                 div_:
+000561 9523      	inc r18
+                 
+000562 1b01      	sub r16, r17
+000563 cff9      	rjmp div_loop
+                 
+                 mod_:
+000564 2f10      	mov r17, r16 ;reszta
+000565 2f02      	mov r16, r18 ;calkowita
+                 
+000566 912f      pop r18
+000567 9508      	ret
+                 
+                 Highscores:
+000568 df07      	rcall ClearScreen
+                 
+000569 e00a      	ldi r16, 10
+00056a e012      	ldi r17, 2
+00056b e9ec      	ldi Zl, LOW(stringWYNIKI*2)
+00056c e0fb      	ldi Zh, HIGH(stringWYNIKI*2)
+00056d dfab      	rcall DrawString
+                 
+00056e e000      	ldi r16, 0
+00056f 2ee0      	mov r14, r16
+                 Highscores_loop:
+                 
+                 
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1
+000570 e020      	ldi r18, 0
+000571 2d1e      	mov r17, r14
+000572 0f11      	lsl r17
+000573 0f11      	lsl r17
+000574 d037      	rcall EEPROM_read
+                 
+000575 2f20      	mov r18, r16
+                 
+000576 e008      	ldi r16, 8
+000577 e015      	ldi r17, 5
+000578 2d4e      	mov r20, r14
+000579 0f44      	lsl r20
+00057a 0f14      	add r17, r20	
+00057b dfb2      	rcall DrawChar
+                 
+                 	
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2
+00057c e020      	ldi r18, 0
+00057d 2d1e      	mov r17, r14
+00057e 0f11      	lsl r17
+00057f 0f11      	lsl r17
+000580 9513      	inc r17
+000581 d02a      	rcall EEPROM_read
+                 
+000582 2f20      	mov r18, r16
+                 
+000583 e009      	ldi r16, 9
+000584 e015      	ldi r17, 5
+000585 2d4e      	mov r20, r14
+000586 0f44      	lsl r20
+000587 0f14      	add r17, r20	
+000588 dfa5      	rcall DrawChar
+                 
+                 	
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;3
+000589 e020      	ldi r18, 0
+00058a 2d1e      	mov r17, r14
+00058b 0f11      	lsl r17
+00058c 0f11      	lsl r17
+00058d 9513      	inc r17
+00058e 9513      	inc r17
+00058f d01c      	rcall EEPROM_read
+                 
+000590 2f20      	mov r18, r16
+                 
+000591 e00a      	ldi r16, 10
+000592 e015      	ldi r17, 5
+000593 2d4e      	mov r20, r14
+000594 0f44      	lsl r20
+000595 0f14      	add r17, r20	
+000596 df97      	rcall DrawChar
+                 	
+                 	
+                 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;4
+000597 e020      	ldi r18, 0
+000598 2d1e      	mov r17, r14
+000599 0f11      	lsl r17
+00059a 0f11      	lsl r17
+00059b 9513      	inc r17
+00059c 9513      	inc r17
+00059d 9513      	inc r17
+00059e d00d      	rcall EEPROM_read
+                 
+00059f 2f20      	mov r18, r16
+                 
+0005a0 e102      	ldi r16, 18
+0005a1 e015      	ldi r17, 5
+0005a2 2d4e      	mov r20, r14
+0005a3 0f44      	lsl r20
+0005a4 0f14      	add r17, r20	
+0005a5 df97      	rcall DrawNumber
+                 
+                 
+0005a6 94e3      	inc r14
+0005a7 2d0e      	mov r16, r14
+0005a8 300a      	cpi r16, 10
+0005a9 f009      	breq Highscores_
+0005aa cfc5      	rjmp Highscores_loop
+                 
+                 	Highscores_:
+0005ab 9508      	ret
+                 
+                 EEPROM_read:
+0005ac 99e1      	sbic EECR, EEWE
+0005ad cffe      	rjmp EEPROM_read
+                 
+0005ae bb2f      	out EEARH, r18
+0005af bb1e      	out EEARL, r17
+                 	
+0005b0 9ae0      	sbi EECR, EERE
+0005b1 b30d      	in r16, EEDR
+0005b2 9508      	ret
+                 
+0005b3 4040
+0005b4 4040
+0005b5 0040      stringEmpty: .db "@@@@@", 0
+0005b6 4150
+0005b7 5a55
+0005b8 0041      stringPauza: .db "PAUZA", 0
+0005b9 4f4b
+0005ba 494e
+0005bb 4345
+0005bc 4720
+0005bd 5952
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1612): warning: .cseg .db misalignment - padding zero byte
+0005be 0000      stringGameover:.db "KONIEC GRY", 0
+0005bf 5957
+0005c0 494e
+0005c1 004b      stringWynik: .db "WYNIK", 0
+0005c2 494c
+0005c3 494e
+0005c4 0045      stringLinie: .db "LINIE", 0
+0005c5 4f50
+0005c6 495a
+0005c7 4d4f
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1615): warning: .cseg .db misalignment - padding zero byte
+0005c8 0000      stringPoziom: .db "POZIOM", 0
+0005c9 414e
+0005ca 5453
+0005cb 5045
+0005cc 594e
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1616): warning: .cseg .db misalignment - padding zero byte
+0005cd 0000      stringNastepny: .db "NASTEPNY", 0
+0005ce 5957
+0005cf 494e
+0005d0 494b
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1617): warning: .cseg .db misalignment - padding zero byte
+0005d1 0000      stringWYNIKI: .db "WYNIKI", 0
+                 
+                 .include "splash.asm"
+                 
+0005d2 de9d      	rcall ClearScreen
+                 
+0005d3 e00a      	ldi r16, 10
+0005d4 e013      	ldi r17, 3
+0005d5 efe8      	ldi Zl, LOW(stringTetris*2)
+0005d6 e0fb      	ldi Zh, HIGH(stringTetris*2)
+0005d7 df41      	rcall DrawString
+                 
+0005d8 e00a      	ldi r16, 10
+0005d9 e016      	ldi r17, 6
+0005da e0e0      	ldi Zl, LOW(stringAutor*2)
+0005db e0fc      	ldi Zh, HIGH(stringAutor*2)
+0005dc df3c      	rcall DrawString
+                 
+                 
+0005dd e006      	ldi r16, 6
+0005de e018      	ldi r17, 8
+0005df e0e6      	ldi Zl, LOW(stringJakubCzekanski*2)
+0005e0 e0fc      	ldi Zh, HIGH(stringJakubCzekanski*2)
+0005e1 df37      	rcall DrawString
+                 
+                 	
+0005e2 e006      	ldi r16, 6
+0005e3 e01f      	ldi r17, 15
+0005e4 e1e6      	ldi Zl, LOW(stringNacisnij1*2)
+0005e5 e0fc      	ldi Zh, HIGH(stringNacisnij1*2)
+0005e6 df32      	rcall DrawString
+                 
+                 
+0005e7 e006      	ldi r16, 6
+0005e8 e111      	ldi r17, 17
+0005e9 e2e4      	ldi Zl, LOW(stringNacisnij2*2)
+0005ea e0fc      	ldi Zh, HIGH(stringNacisnij2*2)
+0005eb df2d      	rcall DrawString
+                 
+                 	
+0005ec e004      	ldi r16, 4
+0005ed e116      	ldi r17, 22
+0005ee e3e4      	ldi Zl, LOW(stringinfo1*2)
+0005ef e0fc      	ldi Zh, HIGH(stringinfo1*2)
+0005f0 df28      	rcall DrawString
+                 
+                 	
+                 
+                 	
+0005f1 e005      	ldi r16, 5
+0005f2 e118      	ldi r17, 24
+0005f3 e4ea      	ldi Zl, LOW(stringinfo2*2)
+0005f4 e0fc      	ldi Zh, HIGH(stringinfo2*2)
+0005f5 df23      	rcall DrawString
+                 
+                 	
+                 	
+0005f6 e006      	ldi r16, 6
+0005f7 e11b      	ldi r17, 27
+0005f8 e5ec      	ldi Zl, LOW(stringinfo3*2)
+0005f9 e0fc      	ldi Zh, HIGH(stringinfo3*2)
+0005fa df1e      	rcall DrawString
+0005fb 9508      	ret
+                 
+                 
+0005fc 4554
+0005fd 5254
+0005fe 5349
+D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm(63): warning: .cseg .db misalignment - padding zero byte
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1619): 'D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm' included form here
+0005ff 0000      stringTetris: .DB "TETRIS", 0
+000600 5541
+000601 4f54
+000602 0052      stringAutor: .DB "AUTOR", 0
+000603 414a
+000604 554b
+000605 2042
+000606 5a43
+000607 4b45
+000608 4e41
+000609 4b53
+00060a 0049      stringJakubCzekanski: .DB "JAKUB CZEKANSKI", 0
+00060b 5453
+00060c 5241
+00060d 2054
+00060e 2020
+00060f 5247
+000610 4a41
+D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm(66): warning: .cseg .db misalignment - padding zero byte
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1619): 'D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm' included form here
+000611 0000      stringNacisnij1: .DB "START   GRAJ", 0
+000612 2020
+000613 2020
+000614 2041
+000615 2020
+000616 5957
+000617 494e
+000618 494b
+D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm(67): warning: .cseg .db misalignment - padding zero byte
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1619): 'D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm' included form here
+000619 0000      stringNacisnij2: .DB "    A   WYNIKI", 0
+00061a 5250
+00061b 4a4f
+00061c 4b45
+00061d 2054
+00061e 5957
+00061f 4f4b
+000620 414e
+000621 594e
+000622 4e20
+000623 2041
+D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm(68): warning: .cseg .db misalignment - padding zero byte
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1619): 'D:\KubX\Dropbox\dev\AVR_Tetris\splash.asm' included form here
+000624 0000      stringinfo1: .DB "PROJEKT WYKONANY NA ", 0
+000625 4f4b
+000626 4b4e
+000627 5255
+000628 2053
+000629 5247
+00062a 2041
+00062b 4552
+00062c 5254
+00062d 004f      stringinfo2: .DB "KONKURS GRA RETRO" ,0 
+00062e 4520
+00062f 454c
+000630 544b
+000631 4f52
+000632 4144
+000633 502e
+000634 004c      stringinfo3: .DB " ELEKTRODA.PL", 0
                  .include "Random.asm"
                  
                  ; No args.
                  RANDOM_init:
                  
                  	; Initialize ADC (for randomizing), PC5
-00044b 98a5      	cbi DDRC, 5
+000635 98a5      	cbi DDRC, 5
                  
                  	; AREF, ADC5
-00044c e005      	ldi r16, 5
-00044d b907      	out ADMUX, r16
-00044e ee05      	ldi r16, 0b11100101;(1<<ADEN)|(1<<ADSC)|(1<<ADIF)|(1<<ADPS0)
-00044f b906      	out ADCSRA, r16
+000636 e005      	ldi r16, 5
+000637 b907      	out ADMUX, r16
+000638 ee05      	ldi r16, 0b11100101;(1<<ADEN)|(1<<ADSC)|(1<<ADIF)|(1<<ADPS0)
+000639 b906      	out ADCSRA, r16
                  
-000450 9508      	ret
+00063a 9508      	ret
                  
                  ; return r16 - 8bit random
                  RANDOM_get:
                  
-000451 b104      	in r16, ADCL
-000452 930f      	push r16
-000453 b105      	in r16, ADCH
-000454 910f      	pop r16
+00063b b104      	in r16, ADCL
+00063c 930f      	push r16
+00063d b105      	in r16, ADCH
+00063e 910f      	pop r16
                  
-000455 9508      	ret
+00063f 9508      	ret
+                 
+                 
+                 RANDOM_block:
+000640 dffa      	rcall RANDOM_get
+                 
+000641 3007      	cpi r16, 7
+000642 f400      	brsh LimitBlock
+                 
+                 	LimitBlock:
+000643 2f10      	mov r17, r16
+000644 1f11      	rol r17
+000645 2701      	eor r16, r17
+000646 7007      	andi r16, 0b111
+000647 3007      	cpi r16, 7
+000648 f009      	breq LimitBlock_dec
+000649 c001      	rjmp LimitBlock_
+                 
+                 	LimitBlock_dec:
+00064a 950a      	dec r16
+                 
+                 	LimitBlock_:
+                 
+00064b 9508      ret
                  .include "Pad.asm"
                  
                  
                  ; Information about buttons is stored in R10
                  PAD_init:
-000456 9a8a      	sbi DDRD, PAD_LATCH
-000457 988b      	cbi DDRD, PAD_DATA
-000458 9a8c      	sbi DDRD, PAD_CLK
+00064c 9a8a      	sbi DDRD, PAD_LATCH
+00064d 988b      	cbi DDRD, PAD_DATA
+00064e 9a8c      	sbi DDRD, PAD_CLK
                  
-000459 9892      	cbi PORTD, PAD_LATCH
-00045a 9a94      	sbi PORTD, PAD_CLK
-00045b 9a93      	sbi PORTD, PAD_DATA
-00045c 9508      	ret
+00064f 9892      	cbi PORTD, PAD_LATCH
+000650 9a94      	sbi PORTD, PAD_CLK
+000651 9a93      	sbi PORTD, PAD_DATA
+000652 9508      	ret
                  
                  ; Reads pad state
                  ; return r10 - pad1_byte
@@ -2597,55 +3301,55 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;       c t       t
                  ;       t
                  PAD_GetState:
-00045d 930f      		push r16
-00045e 931f      		push r17
-00045f 932f      		push r18
+000653 930f      		push r16
+000654 931f      		push r17
+000655 932f      		push r18
                  
-000460 9a92      		sbi PAD_PORT, PAD_LATCH
-000461 e30c
-000462 950a
-000463 f009
-000464 cffd      		delay200ns 60 ;12us
-000465 9892      		cbi PAD_PORT, PAD_LATCH
+000656 9a92      		sbi PAD_PORT, PAD_LATCH
+000657 e30c
+000658 950a
+000659 f009
+00065a cffd      		delay200ns 60 ;12us
+00065b 9892      		cbi PAD_PORT, PAD_LATCH
                  
-000466 e028      		ldi r18, 8
-000467 2711      		clr r17
+00065c e028      		ldi r18, 8
+00065d 2711      		clr r17
                  	; 8bits
                  	GetPadState_loop:
                  
-000468 e30c
-000469 950a
-00046a f009
-00046b cffd      		delay200ns 60 ;6us
-00046c 9894      		cbi PAD_PORT, PAD_CLK
+00065e e30c
+00065f 950a
+000660 f009
+000661 cffd      		delay200ns 60 ;6us
+000662 9894      		cbi PAD_PORT, PAD_CLK
                  	
-00046d 9b83      		sbis PAD_PIN, PAD_DATA ; pominie, jezeli nienacisniety
-00046e d00e      		rcall button_pressed
+000663 9b83      		sbis PAD_PIN, PAD_DATA ; pominie, jezeli nienacisniety
+000664 d00e      		rcall button_pressed
                  
-00046f e30c
-000470 950a
-000471 f009
-000472 cffd      		delay200ns 60 ;6us
-000473 9a94      		sbi PAD_PORT, PAD_CLK
+000665 e30c
+000666 950a
+000667 f009
+000668 cffd      		delay200ns 60 ;6us
+000669 9a94      		sbi PAD_PORT, PAD_CLK
                  
                  	GetPadState_continue:
                  
-000474 952a      		dec r18
-000475 f011      		breq GetPadState_end
-000476 0f11      		lsl r17 ; xxxxxxx1 -> xxxxxx1y
-000477 cff0      		rjmp GetPadState_loop
+00066a 952a      		dec r18
+00066b f011      		breq GetPadState_end
+00066c 0f11      		lsl r17 ; xxxxxxx1 -> xxxxxx1y
+00066d cff0      		rjmp GetPadState_loop
                  
                  	GetPadState_end:
-000478 2ea1      	mov r10, r17
+00066e 2ea1      	mov r10, r17
                  
-000479 912f      	pop r18
-00047a 911f      	pop r17
-00047b 910f      	pop r16
-00047c 9508      	ret
+00066f 912f      	pop r18
+000670 911f      	pop r17
+000671 910f      	pop r16
+000672 9508      	ret
                  
                  	button_pressed:
-00047d 6011      		ori r17, 1
-00047e 9508      		ret
+000673 6011      		ori r17, 1
+000674 9508      		ret
                  .include "Uart.asm"
                  
                  .endif
@@ -2655,48 +3359,48 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  
                  ; No args. F_CPU defined required
                  UART_init:
-00047f e000      	ldi r16, high(F_CPU/16/F_UART-1 )
-000480 bd00      	out UBRRH, r16
-000481 e104      	ldi r16, low(F_CPU/16/F_UART-1)
-000482 b909      	out UBRRL, r16
+000675 e000      	ldi r16, high(F_CPU/16/F_UART-1 )
+000676 bd00      	out UBRRH, r16
+000677 e104      	ldi r16, low(F_CPU/16/F_UART-1)
+000678 b909      	out UBRRL, r16
                  
-000483 e108      	ldi r16, (1<<RXEN)|(1<<TXEN)
-000484 b90a      	out UCSRB, r16
+000679 e108      	ldi r16, (1<<RXEN)|(1<<TXEN)
+00067a b90a      	out UCSRB, r16
                  
                  	; 8N1
-000485 e806      	ldi r16, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0); ;8bit
-000486 bd00      	out UCSRC, r16
+00067b e806      	ldi r16, (1<<URSEL)|(1<<UCSZ1)|(1<<UCSZ0); ;8bit
+00067c bd00      	out UCSRC, r16
                  
-000487 9508      	ret
+00067d 9508      	ret
                  
                  ; r16 - byte
                  UART_putc:
-000488 9b5d      	sbis UCSRA, UDRE
-000489 cffe      	rjmp UART_putc
+00067e 9b5d      	sbis UCSRA, UDRE
+00067f cffe      	rjmp UART_putc
                  
-00048a b90c      	out UDR, r16
-00048b 9508      	ret
+000680 b90c      	out UDR, r16
+000681 9508      	ret
                  
                  ; Z - String address
                  UART_puts:
                  	; Z -> r0
-00048c 9105      	lpm r16, Z+
-00048d 3000      	cpi r16, 0
-00048e f011      	breq UART_puts_end
+000682 9105      	lpm r16, Z+
+000683 3000      	cpi r16, 0
+000684 f011      	breq UART_puts_end
                  
-00048f dff8      	rcall UART_putc
-000490 cffb      	rjmp UART_puts
+000685 dff8      	rcall UART_putc
+000686 cffb      	rjmp UART_puts
                  
                  UART_puts_end:
-000491 9508      	ret
+000687 9508      	ret
                  
                  ; r16 - byte
                  UART_getc:
-000492 9b5f      	sbis UCSRA, RXC
-000493 cffe      	rjmp UART_getc
+000688 9b5f      	sbis UCSRA, RXC
+000689 cffe      	rjmp UART_getc
                  
-000494 b10c      	in r16, UDR
-000495 9508      	ret
+00068a b10c      	in r16, UDR
+00068b 9508      	ret
                  
                  .include "blocks.asm"
                  
@@ -2704,121 +3408,121 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  
                  ;XX
                  ;XX
-000496 0100      .DB 0, 1, 2, 0, \
-000497 0002
-000498 0300          0, 3, 4, 0, \
-000499 0004
-00049a 0000          0, 0, 0, 0,\
-00049b 0000
-00049c 0000          0, 0, 0, 0,\
+00068c 0100      .DB 0, 1, 2, 0, \
+00068d 0002
+00068e 0300          0, 3, 4, 0, \
+00068f 0004
+000690 0000          0, 0, 0, 0,\
+000691 0000
+000692 0000          0, 0, 0, 0,\
                  \
-00049d 0000
-00049e 0100          0, 1, 2, 0, \
-00049f 0002
-0004a0 0300          0, 3, 4, 0, \
-0004a1 0004
-0004a2 0000          0, 0, 0, 0,\
-0004a3 0000
-0004a4 0000          0, 0, 0, 0,\
+000693 0000
+000694 0100          0, 1, 2, 0, \
+000695 0002
+000696 0300          0, 3, 4, 0, \
+000697 0004
+000698 0000          0, 0, 0, 0,\
+000699 0000
+00069a 0000          0, 0, 0, 0,\
                  \
-0004a5 0000
-0004a6 0100          0, 1, 2, 0, \
-0004a7 0002
-0004a8 0300          0, 3, 4, 0, \
-0004a9 0004
-0004aa 0000          0, 0, 0, 0,\
-0004ab 0000
-0004ac 0000          0, 0, 0, 0,\
+00069b 0000
+00069c 0100          0, 1, 2, 0, \
+00069d 0002
+00069e 0300          0, 3, 4, 0, \
+00069f 0004
+0006a0 0000          0, 0, 0, 0,\
+0006a1 0000
+0006a2 0000          0, 0, 0, 0,\
                  \
-0004ad 0000
-0004ae 0100          0, 1, 2, 0, \
-0004af 0002
-0004b0 0300          0, 3, 4, 0, \
-0004b1 0004
-0004b2 0000          0, 0, 0, 0,\
-0004b3 0000
-0004b4 0000
-0004b5 0000          0, 0, 0, 0
+0006a3 0000
+0006a4 0100          0, 1, 2, 0, \
+0006a5 0002
+0006a6 0300          0, 3, 4, 0, \
+0006a7 0004
+0006a8 0000          0, 0, 0, 0,\
+0006a9 0000
+0006aa 0000
+0006ab 0000          0, 0, 0, 0
                  
                  ;X
                  ;X
                  ;X
                  ;X
                  .DB \
-0004b6 0000       0, 0, 5, 0, \
-0004b7 0005
-0004b8 0000       0, 0, 6, 0, \
-0004b9 0006
-0004ba 0000       0, 0, 6, 0, \
-0004bb 0006
-0004bc 0000       0, 0, 7, 0, \
+0006ac 0000       0, 0, 5, 0, \
+0006ad 0005
+0006ae 0000       0, 0, 6, 0, \
+0006af 0006
+0006b0 0000       0, 0, 6, 0, \
+0006b1 0006
+0006b2 0000       0, 0, 7, 0, \
                  \
-0004bd 0007
-0004be 0908       8, 9, 9, 10, \
-0004bf 0a09
-0004c0 0000       0, 0, 0, 0, \
-0004c1 0000
-0004c2 0000       0, 0, 0, 0, \
-0004c3 0000
-0004c4 0000       0, 0, 0, 0, \
+0006b3 0007
+0006b4 0908       8, 9, 9, 10, \
+0006b5 0a09
+0006b6 0000       0, 0, 0, 0, \
+0006b7 0000
+0006b8 0000       0, 0, 0, 0, \
+0006b9 0000
+0006ba 0000       0, 0, 0, 0, \
                  \
-0004c5 0000
-0004c6 0000       0, 0, 5, 0, \
-0004c7 0005
-0004c8 0000       0, 0, 6, 0, \
-0004c9 0006
-0004ca 0000       0, 0, 6, 0, \
-0004cb 0006
-0004cc 0000       0, 0, 7, 0, \
+0006bb 0000
+0006bc 0000       0, 0, 5, 0, \
+0006bd 0005
+0006be 0000       0, 0, 6, 0, \
+0006bf 0006
+0006c0 0000       0, 0, 6, 0, \
+0006c1 0006
+0006c2 0000       0, 0, 7, 0, \
                  \
-0004cd 0007
-0004ce 0908       8, 9, 9, 10, \
-0004cf 0a09
-0004d0 0000       0, 0, 0, 0, \
-0004d1 0000
-0004d2 0000       0, 0, 0, 0, \
-0004d3 0000
-0004d4 0000
-0004d5 0000       0, 0, 0, 0
+0006c3 0007
+0006c4 0908       8, 9, 9, 10, \
+0006c5 0a09
+0006c6 0000       0, 0, 0, 0, \
+0006c7 0000
+0006c8 0000       0, 0, 0, 0, \
+0006c9 0000
+0006ca 0000
+0006cb 0000       0, 0, 0, 0
                  
                  ; X
                  ;XXX
                  .DB \
-0004d6 0000       0, 0, 11, 0, \
-0004d7 000b
-0004d8 0c00       0, 12, 13, 14, \
-0004d9 0e0d
-0004da 0000       0, 0, 0, 0, \
-0004db 0000
-0004dc 0000       0, 0, 0, 0, \
+0006cc 0000       0, 0, 11, 0, \
+0006cd 000b
+0006ce 0c00       0, 12, 13, 14, \
+0006cf 0e0d
+0006d0 0000       0, 0, 0, 0, \
+0006d1 0000
+0006d2 0000       0, 0, 0, 0, \
                  \
-0004dd 0000
-0004de 0000       0, 0, 11, 0, \
-0004df 000b
-0004e0 0000       0, 0, 15, 14, \
-0004e1 0e0f
-0004e2 0000       0, 0, 16, 0, \
-0004e3 0010
-0004e4 0000       0, 0, 0, 0, \
+0006d3 0000
+0006d4 0000       0, 0, 11, 0, \
+0006d5 000b
+0006d6 0000       0, 0, 15, 14, \
+0006d7 0e0f
+0006d8 0000       0, 0, 16, 0, \
+0006d9 0010
+0006da 0000       0, 0, 0, 0, \
                  \
-0004e5 0000
-0004e6 0c00       0, 12, 17, 14, \
-0004e7 0e11
-0004e8 0000       0, 0, 16, 0, \
-0004e9 0010
-0004ea 0000       0, 0, 0, 0, \
-0004eb 0000
-0004ec 0000       0, 0, 0, 0, \
+0006db 0000
+0006dc 0c00       0, 12, 17, 14, \
+0006dd 0e11
+0006de 0000       0, 0, 16, 0, \
+0006df 0010
+0006e0 0000       0, 0, 0, 0, \
+0006e1 0000
+0006e2 0000       0, 0, 0, 0, \
                  \
-0004ed 0000
-0004ee 0000       0, 0, 11, 0, \
-0004ef 000b
-0004f0 0c00       0, 12, 18, 0, \
-0004f1 0012
-0004f2 0000       0, 0, 16, 0, \
-0004f3 0010
-0004f4 0000
-0004f5 0000       0, 0, 0, 0
+0006e3 0000
+0006e4 0000       0, 0, 11, 0, \
+0006e5 000b
+0006e6 0c00       0, 12, 18, 0, \
+0006e7 0012
+0006e8 0000       0, 0, 16, 0, \
+0006e9 0010
+0006ea 0000
+0006eb 0000       0, 0, 0, 0
                  
                  ;+2+1+1
                  
@@ -2826,81 +3530,81 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;XX
                  ; X
                  .DB \
-0004f6 1300       0, 19, 0, 0, \
-0004f7 0000
-0004f8 1400       0, 20, 21, 0, \
-0004f9 0015
-0004fa 0000       0, 0, 22, 0, \
-0004fb 0016
-0004fc 0000       0, 0, 0, 0, \
+0006ec 1300       0, 19, 0, 0, \
+0006ed 0000
+0006ee 1400       0, 20, 21, 0, \
+0006ef 0015
+0006f0 0000       0, 0, 22, 0, \
+0006f1 0016
+0006f2 0000       0, 0, 0, 0, \
                  \
-0004fd 0000
-0004fe 0000       0, 0, 24, 23, \
-0004ff 1718
-000500 1a00       0, 26, 25, 0, \
-000501 0019
-000502 0000       0, 0, 0, 0, \
-000503 0000
-000504 0000       0, 0, 0, 0, \
+0006f3 0000
+0006f4 0000       0, 0, 24, 23, \
+0006f5 1718
+0006f6 1a00       0, 26, 25, 0, \
+0006f7 0019
+0006f8 0000       0, 0, 0, 0, \
+0006f9 0000
+0006fa 0000       0, 0, 0, 0, \
                  \
-000505 0000
-000506 1300       0, 19, 0, 0, \
-000507 0000
-000508 1400       0, 20, 21, 0, \
-000509 0015
-00050a 0000       0, 0, 22, 0, \
-00050b 0016
-00050c 0000       0, 0, 0, 0, \
+0006fb 0000
+0006fc 1300       0, 19, 0, 0, \
+0006fd 0000
+0006fe 1400       0, 20, 21, 0, \
+0006ff 0015
+000700 0000       0, 0, 22, 0, \
+000701 0016
+000702 0000       0, 0, 0, 0, \
                  \
-00050d 0000
-00050e 0000       0, 0, 24, 23, \
-00050f 1718
-000510 1a00       0, 26, 25, 0, \
-000511 0019
-000512 0000       0, 0, 0, 0, \
-000513 0000
-000514 0000
-000515 0000       0, 0, 0, 0
+000703 0000
+000704 0000       0, 0, 24, 23, \
+000705 1718
+000706 1a00       0, 26, 25, 0, \
+000707 0019
+000708 0000       0, 0, 0, 0, \
+000709 0000
+00070a 0000
+00070b 0000       0, 0, 0, 0
                   
                  ; X
                  ;XX
                  ;X
                  .DB \
-000516 0000       0, 0, 27, 0, \
-000517 001b
-000518 1d00       0, 29, 28, 0, \
-000519 001c
-00051a 1e00       0, 30, 0, 0, \
-00051b 0000
-00051c 0000       0, 0, 0, 0, \
+00070c 0000       0, 0, 27, 0, \
+00070d 001b
+00070e 1d00       0, 29, 28, 0, \
+00070f 001c
+000710 1e00       0, 30, 0, 0, \
+000711 0000
+000712 0000       0, 0, 0, 0, \
                  \
-00051d 0000
-00051e 1f00       0, 31, 32, 0, \
-00051f 0020
-000520 0000       0, 0, 33, 34, \
-000521 2221
-000522 0000       0, 0, 0, 0, \
-000523 0000
-000524 0000       0, 0, 0, 0, \
+000713 0000
+000714 1f00       0, 31, 32, 0, \
+000715 0020
+000716 0000       0, 0, 33, 34, \
+000717 2221
+000718 0000       0, 0, 0, 0, \
+000719 0000
+00071a 0000       0, 0, 0, 0, \
                  \
-000525 0000
-000526 0000       0, 0, 27, 0, \
-000527 001b
-000528 1d00       0, 29, 28, 0, \
-000529 001c
-00052a 1e00       0, 30, 0, 0, \
-00052b 0000
-00052c 0000       0, 0, 0, 0, \
+00071b 0000
+00071c 0000       0, 0, 27, 0, \
+00071d 001b
+00071e 1d00       0, 29, 28, 0, \
+00071f 001c
+000720 1e00       0, 30, 0, 0, \
+000721 0000
+000722 0000       0, 0, 0, 0, \
                  \
-00052d 0000
-00052e 1f00       0, 31, 32, 0, \
-00052f 0020
-000530 0000       0, 0, 33, 34, \
-000531 2221
-000532 0000       0, 0, 0, 0, \
-000533 0000
-000534 0000
-000535 0000       0, 0, 0, 0
+000723 0000
+000724 1f00       0, 31, 32, 0, \
+000725 0020
+000726 0000       0, 0, 33, 34, \
+000727 2221
+000728 0000       0, 0, 0, 0, \
+000729 0000
+00072a 0000
+00072b 0000       0, 0, 0, 0
                  
                   ;+4
                   
@@ -2908,41 +3612,41 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;X 
                  ;XX
                  .DB \
-000536 0000       0, 0, 35, 0, \
-000537 0023
-000538 0000       0, 0, 36, 0, \
-000539 0024
-00053a 0000       0, 0, 37, 38, \
-00053b 2625
-00053c 0000       0, 0, 0, 0, \
+00072c 0000       0, 0, 35, 0, \
+00072d 0023
+00072e 0000       0, 0, 36, 0, \
+00072f 0024
+000730 0000       0, 0, 37, 38, \
+000731 2625
+000732 0000       0, 0, 0, 0, \
                  \
-00053d 0000
-00053e 0000       0, 0, 0, 0, \
-00053f 0000
-000540 2900       0, 41, 40, 39, \
-000541 2728
-000542 2a00       0, 42, 0, 0, \
-000543 0000
-000544 0000       0, 0, 0, 0, \
+000733 0000
+000734 0000       0, 0, 0, 0, \
+000735 0000
+000736 2900       0, 41, 40, 39, \
+000737 2728
+000738 2a00       0, 42, 0, 0, \
+000739 0000
+00073a 0000       0, 0, 0, 0, \
                  \
-000545 0000
-000546 0000       0, 0, 43, 44, \
-000547 2c2b
-000548 0000       0, 0, 0, 36, \
-000549 2400
-00054a 0000       0, 0, 0, 42, \
-00054b 2a00
-00054c 0000       0, 0, 0, 0, \
+00073b 0000
+00073c 0000       0, 0, 43, 44, \
+00073d 2c2b
+00073e 0000       0, 0, 0, 36, \
+00073f 2400
+000740 0000       0, 0, 0, 42, \
+000741 2a00
+000742 0000       0, 0, 0, 0, \
                  \
-00054d 0000
-00054e 0000       0, 0, 0, 0, \
-00054f 0000
-000550 0000       0, 0, 0, 35, \
-000551 2300
-000552 2b00       0, 43, 40, 45, \
-000553 2d28
-000554 0000
-000555 0000       0, 0, 0, 0
+000743 0000
+000744 0000       0, 0, 0, 0, \
+000745 0000
+000746 0000       0, 0, 0, 35, \
+000747 2300
+000748 2b00       0, 43, 40, 45, \
+000749 2d28
+00074a 0000
+00074b 0000       0, 0, 0, 0
                   
                  
                   ;+7
@@ -2952,54 +3656,54 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): Including file 'D:\KubX\Dropbox\d
                  ;XX
                  
                  .DB \
-000556 0000       0, 0, 0, 5, \
-000557 0500
-000558 0000       0, 0, 0, 6, \
-000559 0600
-00055a 0000       0, 0, 8, 46, \
-00055b 2e08
-00055c 0000       0, 0, 0, 0, \
+00074c 0000       0, 0, 0, 5, \
+00074d 0500
+00074e 0000       0, 0, 0, 6, \
+00074f 0600
+000750 0000       0, 0, 8, 46, \
+000751 2e08
+000752 0000       0, 0, 0, 0, \
                  \
-00055d 0000
-00055e 0000       0, 0, 0, 0, \
-00055f 0000
-000560 0500       0, 5, 0, 0, \
-000561 0000
-000562 2f00       0, 47, 9, 10, \
-000563 0a09
-000564 0000       0, 0, 0, 0, \
+000753 0000
+000754 0000       0, 0, 0, 0, \
+000755 0000
+000756 0500       0, 5, 0, 0, \
+000757 0000
+000758 2f00       0, 47, 9, 10, \
+000759 0a09
+00075a 0000       0, 0, 0, 0, \
                  \
-000565 0000
-000566 0000       0, 0, 48, 10, \
-000567 0a30
-000568 0000       0, 0, 6, 0, \
-000569 0006
-00056a 0000       0, 0, 7, 0, \
-00056b 0007
-00056c 0000       0, 0, 0, 0, \
+00075b 0000
+00075c 0000       0, 0, 48, 10, \
+00075d 0a30
+00075e 0000       0, 0, 6, 0, \
+00075f 0006
+000760 0000       0, 0, 7, 0, \
+000761 0007
+000762 0000       0, 0, 0, 0, \
                  \
-00056d 0000
-00056e 0000       0, 0, 0, 0, \
-00056f 0000
-000570 0800       0, 8, 9, 49, \
-000571 3109
-000572 0000       0, 0, 0, 7, \
-000573 0700
-000574 0000
-000575 0000       0, 0, 0, 0
+000763 0000
+000764 0000       0, 0, 0, 0, \
+000765 0000
+000766 0800       0, 8, 9, 49, \
+000767 3109
+000768 0000       0, 0, 0, 7, \
+000769 0700
+00076a 0000
+00076b 0000       0, 0, 0, 0
                  
                  COLORS:
                  .DB \
                   0b0100, \
                   0b0001, \
-000576 0104       0b0011, \
+00076c 0104       0b0011, \
                   0b1010, \
-000577 0a03       0b1101, \
+00076d 0a03       0b1101, \
                   0b1100, \
-000578 0c0d
+00076e 0c0d
 D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm(186): warning: .cseg .db misalignment - padding zero byte
-D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): 'D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm' included form here
-000579 0009       0b1001
+D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1624): 'D:\KubX\Dropbox\dev\AVR_Tetris\blocks.asm' included form here
+00076f 0009       0b1001
                  
                  
                  
@@ -3451,6 +4155,322 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): 'D:\KubX\Dropbox\dev\AVR_Tetris\b
 0008de 0777
 0008df 0000      	0x00, 0x00
                  
+                  ;56
+                  FONT_START:
+                 .include "font.asm"
+                 
+0008e0 0000      	0x0, 0x0,\
+0008e1 0000      	0x0, 0x0,\
+0008e2 0000
+0008e3 00f0      	0xf0, 0x0
+                 
+                 .DB	0x0, 0xf,\
+0008e4 0f00      	0x0, 0xf,\
+0008e5 0f00      	0xf0, 0x0,\
+0008e6 00f0
+0008e7 00f0      	0xf0, 0x0
+                 
+                 .DB	0xff, 0xf,\
+0008e8 0fff      	0xf, 0xf,\
+0008e9 0f0f      	0xf, 0xf,\
+0008ea 0f0f
+0008eb 0fff      	0xff, 0xf
+                 
+                 .DB	0x0, 0xf,\
+0008ec 0f00      	0x0, 0xf,\
+0008ed 0f00      	0x0, 0xf,\
+0008ee 0f00
+0008ef 0f00      	0x0, 0xf
+                 
+                 .DB	0xff, 0xf,\
+0008f0 0fff      	0x0, 0xf,\
+0008f1 0f00      	0xf0, 0x0,\
+0008f2 00f0
+0008f3 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+0008f4 0fff      	0x0, 0xf,\
+0008f5 0f00      	0xf0, 0xf,\
+0008f6 0ff0
+0008f7 0fff      	0xff, 0xf
+                 
+                 .DB	0xf, 0x0,\
+0008f8 000f      	0xf, 0x0,\
+0008f9 000f      	0xff, 0xf,\
+0008fa 0fff
+0008fb 0f00      	0x0, 0xf
+                 
+                 .DB	0xff, 0xf,\
+0008fc 0fff      	0xf, 0x0,\
+0008fd 000f      	0x0, 0xf,\
+0008fe 0f00
+0008ff 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000900 0fff      	0xf, 0x0,\
+000901 000f      	0xff, 0xf,\
+000902 0fff
+000903 0f0f      	0xf, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000904 0fff      	0x0, 0xf,\
+000905 0f00      	0x0, 0xf,\
+000906 0f00
+000907 0f00      	0x0, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000908 0fff      	0xf, 0xf,\
+000909 0f0f      	0xff, 0xf,\
+00090a 0fff
+00090b 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+00090c 0fff      	0xf, 0xf,\
+00090d 0f0f      	0xff, 0xf,\
+00090e 0fff
+00090f 0f00      	0x0, 0xf
+                 
+                 .DB	0x0, 0xf,\
+000910 0f00      	0x0, 0x0,\
+000911 0000      	0x0, 0xf,\
+000912 0f00
+000913 0000      	0x0, 0x0
+                 
+                 .DB	0x0, 0xf,\
+000914 0f00      	0x0, 0x0,\
+000915 0000      	0x0, 0xf,\
+000916 0f00
+000917 0f00      	0x0, 0xf
+                 
+                 .DB	0x0, 0x0,\
+000918 0000      	0x0, 0xf,\
+000919 0f00      	0xf0, 0x0,\
+00091a 00f0
+00091b 0f00      	0x0, 0xf
+                 
+                 .DB	0x0, 0x0,\
+00091c 0000      	0xf0, 0xff,\
+00091d fff0      	0x0, 0x0,\
+00091e 0000
+00091f fff0      	0xf0, 0xff
+                 
+                 .DB	0x0, 0x0,\
+000920 0000      	0xf0, 0x0,\
+000921 00f0      	0x0, 0xf,\
+000922 0f00
+000923 00f0      	0xf0, 0x0
+                 
+                 .DB	0xff, 0xf,\
+000924 0fff      	0x0, 0xf,\
+000925 0f00      	0xf0, 0x0,\
+000926 00f0
+000927 0f00      	0x0, 0xf
+                 
+                 .DB	0x0, 0x0,\
+000928 0000      	0x0, 0x0,\
+000929 0000      	0x0, 0x0,\
+00092a 0000
+00092b 0000      	0x0, 0x0
+                 
+                 .DB	0xf0, 0xf,\
+00092c 0ff0      	0xf, 0xf,\
+00092d 0f0f      	0xff, 0xf,\
+00092e 0fff
+00092f 0f0f      	0xf, 0xf
+                 
+                 .DB	0xff, 0x0,\
+000930 00ff      	0xf, 0xf,\
+000931 0f0f      	0xff, 0xf,\
+000932 0fff
+000933 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000934 0fff      	0xf, 0x0,\
+000935 000f      	0xf, 0x0,\
+000936 000f
+000937 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0x0,\
+000938 00ff      	0xf, 0xf,\
+000939 0f0f      	0xf, 0xf,\
+00093a 0f0f
+00093b 00ff      	0xff, 0x0
+                 
+                 .DB	0xff, 0xf,\
+00093c 0fff      	0xf, 0x0,\
+00093d 000f      	0xff, 0x0,\
+00093e 00ff
+00093f 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000940 0fff      	0xf, 0x0,\
+000941 000f      	0xff, 0x0,\
+000942 00ff
+000943 000f      	0xf, 0x0
+                 
+                 .DB	0xf, 0x0,\
+000944 000f      	0xff, 0xf,\
+000945 0fff      	0xf, 0xf,\
+000946 0f0f
+000947 0fff      	0xff, 0xf
+                 
+                 .DB	0xf, 0xf,\
+000948 0f0f      	0xf, 0xf,\
+000949 0f0f      	0xff, 0xf,\
+00094a 0fff
+00094b 0f0f      	0xf, 0xf
+                 
+                 .DB	0xf0, 0x0,\
+00094c 00f0      	0xf0, 0x0,\
+00094d 00f0      	0xf0, 0x0,\
+00094e 00f0
+00094f 00f0      	0xf0, 0x0
+                 
+                 .DB	0xff, 0xf,\
+000950 0fff      	0x0, 0xf,\
+000951 0f00      	0xf, 0xf,\
+000952 0f0f
+000953 0ff0      	0xf0, 0xf
+                 
+                 .DB	0xf, 0xf,\
+000954 0f0f      	0xf, 0xf,\
+000955 0f0f      	0xff, 0x0,\
+000956 00ff
+000957 0f0f      	0xf, 0xf
+                 
+                 .DB	0xf, 0x0,\
+000958 000f      	0xf, 0x0,\
+000959 000f      	0xf, 0x0,\
+00095a 000f
+00095b 00ff      	0xff, 0x0
+                 
+                 .DB	0xf, 0xf,\
+00095c 0f0f      	0xff, 0xf,\
+00095d 0fff      	0xf, 0xf,\
+00095e 0f0f
+00095f 0f0f      	0xf, 0xf
+                 
+                 .DB	0xf, 0xf0,\
+000960 f00f      	0xff, 0xf0,\
+000961 f0ff      	0xf, 0xff,\
+000962 ff0f
+000963 f00f      	0xf, 0xf0
+                 
+                 .DB	0xff, 0xf,\
+000964 0fff      	0xf, 0xf,\
+000965 0f0f      	0xf, 0xf,\
+000966 0f0f
+000967 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000968 0fff      	0xf, 0xf,\
+000969 0f0f      	0xff, 0xf,\
+00096a 0fff
+00096b 000f      	0xf, 0x0
+                 
+                 .DB	0xff, 0xf,\
+00096c 0fff      	0xf, 0xf,\
+00096d 0f0f      	0xff, 0xf,\
+00096e 0fff
+00096f 0f00      	0x0, 0xf
+                 
+                 .DB	0xff, 0x0,\
+000970 00ff      	0xf, 0xf,\
+000971 0f0f      	0xff, 0x0,\
+000972 00ff
+000973 0f0f      	0xf, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000974 0fff      	0xff, 0x0,\
+000975 00ff      	0x0, 0xf,\
+000976 0f00
+000977 0fff      	0xff, 0xf
+                 
+                 .DB	0xff, 0xf,\
+000978 0fff      	0xf0, 0x0,\
+000979 00f0      	0xf0, 0x0,\
+00097a 00f0
+00097b 00f0      	0xf0, 0x0
+                 
+                 .DB	0xf, 0xf,\
+00097c 0f0f      	0xf, 0xf,\
+00097d 0f0f      	0xf, 0xf,\
+00097e 0f0f
+00097f 0fff      	0xff, 0xf
+                 
+                 .DB	0xf, 0xf,\
+000980 0f0f      	0xf, 0xf,\
+000981 0f0f      	0xff, 0xf,\
+000982 0fff
+000983 00f0      	0xf0, 0x0
+                 
+                 .DB	0xf, 0xf0,\
+000984 f00f      	0xf, 0xf0,\
+000985 f00f      	0xff, 0xff,\
+000986 ffff
+000987 0ff0      	0xf0, 0xf
+                 
+                 .DB	0xf, 0xf,\
+000988 0f0f      	0xf0, 0x0,\
+000989 00f0      	0xf0, 0x0,\
+00098a 00f0
+00098b 0f0f      	0xf, 0xf
+                 
+                 .DB	0xf, 0xf,\
+00098c 0f0f      	0xf, 0xf,\
+00098d 0f0f      	0xf0, 0x0,\
+00098e 00f0
+00098f 00f0      	0xf0, 0x0
+                 
+                 .DB	0xff, 0xf,\
+000990 0fff      	0x0, 0xf,\
+000991 0f00      	0xf0, 0x0,\
+000992 00f0
+000993 0fff      	0xff, 0xf
+                 
+                 
+                 
+                 .ESEG
+000000 4b
+000001 55
+000002 42
+000003 4c        .DB 'K', 'U', 'B', 76
+000004 41
+000005 41
+000006 41
+000007 00        .DB 'A', 'A', 'A', 0
+000008 41
+000009 41
+00000a 41
+00000b 00        .DB 'A', 'A', 'A', 0
+00000c 41
+00000d 41
+00000e 41
+00000f 00        .DB 'A', 'A', 'A', 0
+000010 41
+000011 41
+000012 41
+000013 00        .DB 'A', 'A', 'A', 0
+000014 41
+000015 41
+000016 41
+000017 00        .DB 'A', 'A', 'A', 0
+000018 41
+000019 41
+00001a 41
+00001b 00        .DB 'A', 'A', 'A', 0
+00001c 41
+00001d 41
+00001e 41
+00001f 00        .DB 'A', 'A', 'A', 0
+000020 41
+000021 41
+000022 41
+000023 00        .DB 'A', 'A', 'A', 0
+000024 41
+000025 41
+000026 41
+000027 00        .DB 'A', 'A', 'A', 0
 
 
 RESOURCE USE INFORMATION
@@ -3468,40 +4488,40 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 ATmega8 register use summary:
-r0 :  41 r1 :  15 r2 :  42 r3 :   3 r4 :   0 r5 :   4 r6 :   2 r7 :  27 
-r8 :   0 r9 :   0 r10:   8 r11:   5 r12:   0 r13:   0 r14:   0 r15:   0 
-r16: 229 r17:  76 r18:  61 r19:   6 r20: 108 r21: 106 r22:  47 r23:   4 
-r24:   8 r25:   6 r26:  26 r27:  26 r28:   4 r29:   4 r30:  89 r31:  37 
-x  :  76 y  :  29 z  : 106 
-Registers used: 28 out of 35 (80.0%)
+r0 :  47 r1 :  21 r2 :  53 r3 :   4 r4 :   0 r5 :   5 r6 :   2 r7 :  27 
+r8 :   0 r9 :   0 r10:  12 r11:   7 r12:   0 r13:   3 r14:  11 r15:   0 
+r16: 332 r17: 159 r18:  99 r19:  14 r20: 120 r21: 106 r22:  47 r23:   6 
+r24:   8 r25:   6 r26:  32 r27:  32 r28:   4 r29:   4 r30: 104 r31:  52 
+x  :  82 y  :  29 z  : 107 
+Registers used: 30 out of 35 (85.7%)
 
 ATmega8 instruction use summary:
-.lds  :   0 .sts  :   0 adc   :  14 add   :  40 adiw  :  20 and   :   0 
+.lds  :   0 .sts  :   0 adc   :  20 add   :  59 adiw  :  21 and   :   0 
 andi  :   3 asr   :   0 bclr  :   0 bld   :  26 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 breq  :  40 brge  :   0 brhc  :   0 brhs  :   0 
-brid  :   0 brie  :   0 brlo  :   2 brlt  :   0 brmi  :   0 brne  :   1 
-brpl  :   0 brsh  :   5 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
+brcc  :   0 brcs  :   0 breq  :  52 brge  :   0 brhc  :   0 brhs  :   0 
+brid  :   0 brie  :   0 brlo  :   3 brlt  :   0 brmi  :   0 brne  :   4 
+brpl  :   0 brsh  :   6 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
 bset  :   0 bst   :   0 cbi   :   9 cbr   :   0 clc   :   0 clh   :   0 
-cli   :   1 cln   :   0 clr   :  13 cls   :   0 clt   :   0 clv   :   0 
-clz   :   0 com   :   0 cp    :   0 cpc   :   4 cpi   :  29 cpse  :  12 
-dec   :  21 eor   :   1 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 
-ijmp  :   0 in    :   5 inc   :  13 ld    :  41 ldd   :   0 ldi   : 115 
-lds   :  41 lpm   :  67 lsl   :  13 lsr   :   1 mov   :  28 movw  :  26 
-mul   :  33 muls  :   0 mulsu :   0 neg   :   0 nop   :   5 or    :   0 
-ori   :   1 out   : 127 pop   :  18 push  :  17 rcall :  55 ret   :  37 
-reti  :   2 rjmp  :  49 rol   :   1 ror   :   0 sbc   :   0 sbci  :   0 
-sbi   :  11 sbic  :   0 sbis  :   3 sbiw  :   1 sbr   :   0 sbrc  :   6 
-sbrs  :   4 sec   :   0 seh   :   0 sei   :   1 sen   :   0 ser   :   3 
+cli   :   1 cln   :   0 clr   :  15 cls   :   0 clt   :   0 clv   :   0 
+clz   :   0 com   :   0 cp    :   1 cpc   :   4 cpi   :  43 cpse  :  12 
+dec   :  21 eor   :   2 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 
+ijmp  :   0 in    :   5 inc   :  25 ld    :  41 ldd   :   0 ldi   : 218 
+lds   :  62 lpm   :  68 lsl   :  25 lsr   :   1 mov   :  53 movw  :  26 
+mul   :  36 muls  :   0 mulsu :   0 neg   :   0 nop   :   5 or    :   0 
+ori   :   1 out   : 127 pop   :  24 push  :  23 rcall :  93 ret   :  47 
+reti  :   2 rjmp  :  64 rol   :   1 ror   :   0 sbc   :   0 sbci  :   0 
+sbi   :  12 sbic  :   1 sbis  :   3 sbiw  :   1 sbr   :   0 sbrc  :   9 
+sbrs  :   5 sec   :   0 seh   :   0 sei   :   1 sen   :   0 ser   :   3 
 ses   :   0 set   :   1 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :  57 std   :   0 sts   :  21 sub   :   0 subi  :   0 swap  :  52 
+st    :  62 std   :   0 sts   :  54 sub   :   1 subi  :   2 swap  :  52 
 tst   :   0 wdr   :   0 
-Instructions used: 49 out of 110 (44.5%)
+Instructions used: 53 out of 110 (48.2%)
 
 ATmega8 memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0011c0   2314    904   3218    8192  39.3%
-[.dseg] 0x000060 0x000426      0      6      6    1024   0.6%
-[.eseg] 0x000000 0x000000      0      0      0     512   0.0%
+[.cseg] 0x000000 0x001328   3142   1440   4582    8192  55.9%
+[.dseg] 0x000060 0x00042b      0     11     11    1024   1.1%
+[.eseg] 0x000000 0x000028      0     40     40     512   7.8%
 
-Assembly complete, 0 errors, 1 warnings
+Assembly complete, 0 errors, 9 warnings
