@@ -191,13 +191,13 @@ linefull_end:
 	inc r17
 	rcall check_collision
 	cpi r16, 0xff
-	;breq GameOver
+	breq GameOver
 
 	rjmp MainLoop_Redraw
 
 
 GameOver:
-rcall ClearScreen
+;rcall ClearScreen
 sts pause, r3
 rjmp InfinityLoop
 
@@ -718,10 +718,12 @@ MoveDownContinue:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 DrawMap:
-		ldi r16, 15
+		ldi r16, 13
 		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*4 )
 		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*4 )
-		ldi r17, 0x0f
+		ldi r17, 50
+		st X+, r17
+		ldi r17, 51
 	hor_loop_1:
 
 		st X+, r17
@@ -730,6 +732,9 @@ DrawMap:
 		rjmp hor_loop_1     ; 2 clk
 
 	hor_loop_1_end:
+		ldi r17, 52
+		st X+, r17
+
 		ldi r16, 21
 		ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 )
 		ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 )
@@ -737,6 +742,7 @@ DrawMap:
 	ver_loop:
 
 
+		ldi r17, 53
 		st X, r17
 		adiw X, 14
 		st X, r17
@@ -749,9 +755,12 @@ DrawMap:
 
 	ver_loop_end:
 
-		ldi r16, 15
+		ldi r16, 13
 		ldi Xl, LOW( 96+MAP_X + (SCREEN_WIDTH*26) )
 		ldi Xh, HIGH( 96+MAP_X + (SCREEN_WIDTH*26) )
+		ldi r17, 54
+		st X+, r17
+		ldi r17, 51
 	hor_loop_2:
 
 		st X+, r17
@@ -761,6 +770,8 @@ DrawMap:
 		rjmp hor_loop_2     ; 2 clk
 
 DrawMap_:
+	ldi r17, 55
+	st X+, r17
 	ret
 
 
