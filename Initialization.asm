@@ -42,12 +42,16 @@ out OCR2, r16
 sbi DDRB, 3
 
 ; Variables
-ldi r16, 0
+ldi r16, 6
 sts block_y, r16
 ldi r16, 5+X_DELTA
 sts block_x, r16
 
 ldi r16,0b1
 sts block_color, r16
+ldi r16, 1
+sts block_type, r16
+
+sts pause, r2
 
 sei

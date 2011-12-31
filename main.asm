@@ -8,7 +8,8 @@ block_x: .BYTE 1
 block_color: .BYTE 1
 block_type: .BYTE 1
 block_rotation: .BYTE 1
-score: .WORD 2
+pause: .BYTE 1
+;score: .WORD 2
 
 .cseg
 
@@ -68,6 +69,9 @@ asdasdasDAS:
 
 	mov r11, r10
 
+	lds r16, pause
+	cpi r16, 0xff
+	breq InfinityLoop
 
  	clr r6 ;  No new frame
 	; 500ms between block moves
@@ -86,7 +90,7 @@ asdasdasDAS:
 		;; Check for collision below
 
 		ldi r16, 0
-		rcall SetBlock
+		rcall ClearBlock
 
 		lds r16, block_x
 		lds r17, block_y
@@ -96,8 +100,13 @@ asdasdasDAS:
 
 		cpi r16, 0
 
-		breq block_clear; We can go further
+		breq block_clear_tramp; We can go further
+		rjmp block_clear_tramp_
 
+block_clear_tramp:
+	rjmp block_clear
+
+block_clear_tramp_:
 
 		lds r16, block_color
 		rcall SetBlock
@@ -105,6 +114,47 @@ asdasdasDAS:
 	; Collision
 
 	; Check for full lines
+
+	;for (int y=0; y<20; y++)
+
+		ldi r17, 0
+
+		loop_check_map:
+			push r17
+			rcall check_line
+			pop r17
+
+			cpi r16, 0xff
+			breq check_map_linefull
+
+		loop_check_map_continue:
+
+			inc r17
+			cpi r17, 21
+			breq loop_check_map_end
+			rjmp loop_check_map
+
+	check_map_linefull:
+	push r17
+
+	mov r16, r17
+
+linefull_loop:
+	mov r17, r16
+	push r16
+	rcall MoveLine
+	pop r16
+
+	dec r16
+	breq linefull_end
+	rjmp linefull_loop
+linefull_end:
+	pop r17
+	rjmp loop_check_map_continue
+	
+
+
+	loop_check_map_end:
 
 	; We just reset position
 
@@ -133,15 +183,35 @@ asdasdasDAS:
 	lpm r16, Z
 
 	sts block_color, r16
+
+	; if collision, end of game
+	lds r16, block_x
+	lds r17, block_y
+	inc r17
+	inc r17
+	rcall check_collision
+	cpi r16, 0xff
+	;breq GameOver
+
 	rjmp MainLoop_Redraw
 
+
+GameOver:
+rcall ClearScreen
+sts pause, r3
+rjmp InfinityLoop
+
 LimitBlock:
+mov r17, r16
+rol r17
+eor r16, r17
 andi r16, 0b111
+cpi r16, 7
 breq LimitBlock_dec
 rjmp LimitBlock_
 
 LimitBlock_dec:
-lsr r16
+dec r16
 rjmp LimitBlock_
 
 block_clear:
@@ -170,6 +240,184 @@ rjmp InfinityLoop
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; r16 - color
+SetBlock:
+
+	push r16
+	lds r16, block_y
+		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
+		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
+
+	cpi r16, 0
+	breq loop_SetBlock_
+	
+	loop_SetBlock:
+
+		adiw X, SCREEN_WIDTH
+
+		dec r16            ; 1 clk
+		breq loop_SetBlock_    ; 1/2 clk
+		rjmp loop_SetBlock     ; 2 clk
+
+	loop_SetBlock_:
+
+
+		lds r16, block_x
+		add Xl, r16
+		ldi r16, 0
+		adc Xh, r16
+		pop r16
+		
+
+		ldi Zl, LOW(2*BLOCK_START)
+		ldi Zh, HIGH(2*BLOCK_START)
+
+		ldi r18, 64
+		lds r17, block_type
+		; block type * 16
+		; 4x line
+		mul r17, r18
+
+		
+		lds r18, block_rotation
+		lsl r18
+		lsl r18
+		lsl r18
+		lsl r18
+		add r0, r18
+		adc r1, r2
+
+		add Zl, r0
+		adc Zh, r1
+
+
+
+		ldi r17, 4
+	loop_DrawBlock:
+		lpm r18, Z+
+		
+		cpse r18, r2
+		rcall SetPixel
+		adiw X, 1
+
+		lpm r18, Z+
+		cpse r18, r2
+		rcall SetPixel
+		adiw X, 1
+
+		lpm r18, Z+
+		cpse r18, r2
+		rcall SetPixel
+		adiw X, 1
+
+		lpm r18, Z+
+		cpse r18, r2
+		rcall SetPixel
+		
+		adiw X, SCREEN_WIDTH-3
+
+		dec r17
+		breq SetBlock_End
+		rjmp loop_DrawBlock
+
+		SetBlock_End:
+		ret
+
+
+SetPixel:
+	st X, r18
+	ret
+
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; r16 - color
+ClearBlock:
+
+	push r16
+	lds r16, block_y
+		ldi Xl, LOW( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA)
+		ldi Xh, HIGH( 96+MAP_X+1 + (SCREEN_WIDTH*5) - X_DELTA )
+
+	cpi r16, 0
+	breq loop_ClearBlock_
+	
+	loop_ClearBlock:
+
+		adiw X, SCREEN_WIDTH
+
+		dec r16            ; 1 clk
+		breq loop_ClearBlock_    ; 1/2 clk
+		rjmp loop_ClearBlock     ; 2 clk
+
+	loop_ClearBlock_:
+
+
+		lds r16, block_x
+		add Xl, r16
+		ldi r16, 0
+		adc Xh, r16
+		pop r16
+		
+
+		ldi Zl, LOW(2*BLOCK_START)
+		ldi Zh, HIGH(2*BLOCK_START)
+
+		ldi r18, 64
+		lds r17, block_type
+		; block type * 16
+		; 4x line
+		mul r17, r18
+
+		
+		lds r18, block_rotation
+		lsl r18
+		lsl r18
+		lsl r18
+		lsl r18
+		add r0, r18
+		adc r1, r2
+
+		add Zl, r0
+		adc Zh, r1
+
+
+
+		ldi r17, 4
+	loop_Draw_ClearBlock:
+		lpm r18, Z+
+		
+		cpse r18, r2
+		rcall SetPixel2
+		adiw X, 1
+
+		lpm r18, Z+
+		cpse r18, r2
+		rcall SetPixel2
+		adiw X, 1
+
+		lpm r18, Z+
+		cpse r18, r2
+		rcall SetPixel2
+		adiw X, 1
+
+		lpm r18, Z+
+		cpse r18, r2
+		rcall SetPixel2
+		
+		adiw X, SCREEN_WIDTH-3
+
+		dec r17
+		breq ClearBlock_End
+		rjmp loop_Draw_ClearBlock
+
+		ClearBlock_End:
+		ret
+
+
+SetPixel2:
+	st X, r2
+	ret
+/*
 SetBlock:
 
 	push r16
@@ -251,7 +499,7 @@ SetBlock:
 
 SetPixel:
 	st X, r16
-	ret
+	ret*/
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -263,7 +511,7 @@ RotateRight:
 RotateRight_Begin:
 
 	ldi r16, 0
-	rcall SetBlock
+	rcall ClearBlock
 
 	lds r16, block_rotation
 	push r16
@@ -282,8 +530,8 @@ RotateRight_Continue:
 
 	cpi r16, 0
 	pop r16
-
-	breq RotateRight_End
+    
+	breq RotateRight_End 
 
 	sts block_rotation, r16 ;prev rotation
 
@@ -306,7 +554,7 @@ RotateLeft:
 RotateLeft_Begin:
 
 	ldi r16, 0
-	rcall SetBlock
+	rcall ClearBlock
 	
 	lds r16, block_rotation
 	push r16
@@ -349,7 +597,7 @@ MoveRight:
 MoveRight_Begin:
 
 	ldi r16, 0
-	rcall SetBlock
+	rcall ClearBlock
 
 	lds r16, block_x
 	lds r17, block_y
@@ -388,7 +636,7 @@ MoveLeft:
 MoveLeft_Begin:
 
 	ldi r16, 0
-	rcall SetBlock
+	rcall ClearBlock
 
 	lds r16, block_x
 	lds r17, block_y
@@ -409,7 +657,7 @@ MoveLeft_Begin:
 MoveLeftContinue:
 	
 	ldi r16, 0  ; Delete prev block
-	rcall SetBlock
+	rcall ClearBlock
 
 	lds r16, block_x
 	dec r16
@@ -432,7 +680,7 @@ MoveDown:
 MoveDown_Begin:
 
 	ldi r16, 0
-	rcall SetBlock
+	rcall ClearBlock
 
 	lds r16, block_x
 	lds r17, block_y
@@ -633,22 +881,25 @@ check_collision:
 	ldi Zl, LOW(2*BLOCK_START)
 	ldi Zh, HIGH(2*BLOCK_START)
 
+
+
+	ldi r18, 64
 	lds r17, block_type
 	; block type * 16
 	; 4x line
-	lsl r17
-	lsl r17
-	lsl r17
-	lsl r17
+	mul r17, r18
 
 	
 	lds r18, block_rotation
 	lsl r18
 	lsl r18
-	add r17, r18
+	lsl r18
+	lsl r18
+	add r0, r18
+	adc r1, r2
 
-	add Zl, r17
-	adc Zh, r2
+	add Zl, r0
+	adc Zh, r1
 
 	clr r19
 
@@ -659,19 +910,22 @@ check_collision:
 	loop_CheckBlock:
 		lpm r18, Z+
 
-		sbrc r18, 3
+		cpse r18, r2
 		rcall CheckPixel
 		adiw X, 1
 
-		sbrc r18, 2
+		lpm r18, Z+
+		cpse r18, r2
 		rcall CheckPixel
 		adiw X, 1
 
-		sbrc r18, 1
+		lpm r18, Z+
+		cpse r18, r2
 		rcall CheckPixel
 		adiw X, 1
 
-		sbrc r18, 0
+		lpm r18, Z+
+		cpse r18, r2
 		rcall CheckPixel
 		
 		adiw X, SCREEN_WIDTH-3
@@ -698,6 +952,137 @@ CheckPixel:
 
 CheckPixel_no:
 	ret
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; r17 - y
+; ret - 0 - holes, 0xff - full
+check_line:
+	ldi r18, SCREEN_WIDTH
+	mul r18, r17
+	
+	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+
+	add r0, Xl
+	adc r1, Xh
+
+	mov Xl, r0
+	mov Xh, r1
+
+	ser r19
+
+	; for (x;x<12;x++)
+
+		ldi r17, 13
+	loop_check_line:
+		ld r16, X+
+		cpi r16, 0
+		breq CheckLine_false
+
+		dec r17
+		breq CheckLine_end
+		rjmp loop_check_line
+
+		CheckLine_false:
+		clr r19
+
+		CheckLine_end:
+		mov r16, r19
+		ret
+
+; r17 - y	
+ClearLine:
+	ldi r18, SCREEN_WIDTH
+	mul r18, r17
+
+	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+
+	add r0, Xl
+	adc r1, Xh
+
+	mov Xl, r0
+	mov Xh, r1
+
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X+, r2
+	st X, r2
+
+	ret
+
+; r17 - line cleared
+MoveLine:
+	ldi r18, SCREEN_WIDTH
+	mul r18, r17
+
+	ldi Xl, LOW( 96+MAP_X + SCREEN_WIDTH*5 +1)
+	ldi Xh, HIGH( 96+MAP_X + SCREEN_WIDTH*5 +1)
+
+	add r0, Xl
+	adc r1, Xh
+
+	mov Xl, r0
+	mov Xh, r1
+
+	mov Zl, Xl
+	mov Zh, Xh
+
+	sbiw Z, SCREEN_WIDTH
+
+	ld r16, Z+
+	st X+, r16
+
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ld r16, Z+
+	st X+, r16
+
+	ret
+
 
 .include "Random.asm"
 .include "Pad.asm"
