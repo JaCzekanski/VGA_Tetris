@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Sat Dec 31 13:25:11 2011
+AVRASM ver. 2.1.42  D:\KubX\Dropbox\dev\AVR_Tetris\main.asm Sat Dec 31 13:40:13 2011
 
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1): Including file 'd:\app\Atmel\AVR Tools\AvrAssembler2\Appnotes\m8def.inc'
 D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(2): Including file 'D:\KubX\Dropbox\dev\AVR_Tetris\macros.asm'
@@ -3169,7 +3169,7 @@ D:\KubX\Dropbox\dev\AVR_Tetris\main.asm(1102): 'D:\KubX\Dropbox\dev\AVR_Tetris\b
 000850 222a          0x2a, 0x22,\
 000851 222a          0x2a, 0x22,\
 000852 222a
-000853 aaa2          0xa2, 0xaa
+000853 0002          0x02, 0x00
                  	
                  .DB 0xaa, 0x2a,\
 000854 2aaa          0x22, 0x02,\
