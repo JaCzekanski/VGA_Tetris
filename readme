@@ -1,25 +1,25 @@
-Tak, tak. Kolejny tetris. Ale czym wyró¿nia siê mój spoœród innych?
-- Architektura - to nie pc, smartfon czy komórka, moja w³asna platforma oparta o mikrokontroler 8bitowy.
-- Kod - postanowi³em ca³¹ grê napisaæ w assemblerze
+ï»¿Tak, tak. Kolejny tetris. Ale czym wyrÃ³Å¼nia siÄ™ mÃ³j spoÅ›rÃ³d innych?
+- Architektura - to nie pc, smartfon czy komÃ³rka, moja wÅ‚asna platforma oparta o mikrokontroler 8bitowy.
+- Kod - postanowiÅ‚em caÅ‚Ä… grÄ™ napisaÄ‡ w assemblerze
 
 
 Specyfikacja
 Procesor: Atmega8 (8kB flash, 1kB SRAM) 
-Obraz: 104x120px, 16kolorów 
-Wejœcie: Pad od Pegasusa (8 przycisków) 
-DŸwiêk: Mono, generowany przez PWM (niestety nie ma, brak³o czasu) 
+Obraz: 104x120px, 16kolorÃ³w 
+WejÅ›cie: Pad od Pegasusa (8 przyciskÃ³w) 
+DÅºwiÄ™k: Mono, generowany przez PWM (niestety nie ma, brakÅ‚o czasu) 
 
 Dlaczego?
-Projekt wykonany na konkurs na serwisie Elektroda.pl. Konkurs by³ bardzo dobr¹ motywacj¹ do nauki architektury AVR od najni¿szego poziomu (assembler). Dodatkowo nauczy³em siê generowaæ obraz VGA i poprowadzi³em projekt od pomys³u do gotowego urz¹dzenia.
+Projekt wykonany na konkurs na serwisie Elektroda.pl. Konkurs byÅ‚ bardzo dobrÄ… motywacjÄ… do nauki architektury AVR od najniÅ¼szego poziomu (assembler). Dodatkowo nauczyÅ‚em siÄ™ generowaÄ‡ obraz VGA i poprowadziÅ‚em projekt od pomysÅ‚u do gotowego urzÄ…dzenia.
 
 Efekt?
-Ukoñczona, dzia³aj¹ca "konsola" wraz z klonem gry Tetris, 2gie miejsce w konkursie, ponad 2 tysi¹ce linii kodu w czystym assemblerze, duma z ukoñczonego projektu (od projektu gry, schematu, PCB, kodu po dzia³aj¹c¹ konsole).
+UkoÅ„czona, dziaÅ‚ajÄ…ca "konsola" wraz z klonem gry Tetris, 2gie miejsce w konkursie, ponad 2 tysiÄ…ce linii kodu w czystym assemblerze, duma z ukoÅ„czonego projektu (od projektu gry, schematu, PCB, kodu po dziaÅ‚ajÄ…cÄ… konsole).
 
-Co w tym takiego trudnego? Ano to, ¿e nie mam biblioteki jak SDL czy Allegro, gdzie wywo³uje funkcjê do wyœwietlenia obrazka na ekranie. Nie mam ¿adnych funkcji, nawet systemu operacyjnego czy nawet czegoœ pokroju BIOSu. Wszystko musia³em zaimplementowaæ samemu, w³¹czaj¹c w to generacjê obrazu linia po linii ( czyli to, czym normalnie zajmuje siê karta graficzna ), gdzie musia³em liczyæ instrukcje co do cyklu, w innym przypadku obraz rozsynchronizowywa³ siê lub wyœwietla³ b³êdnie, nastêpnie funkcje wy¿szego poziomu jak wyœwietlanie tilesa i póŸniej wyœwietlanie fontów czy obrazków.
+Co w tym takiego trudnego? Ano to, Å¼e nie mam biblioteki jak SDL czy Allegro, gdzie wywoÅ‚uje funkcjÄ™ do wyÅ›wietlenia obrazka na ekranie. Nie mam Å¼adnych funkcji, nawet systemu operacyjnego czy nawet czegoÅ› pokroju BIOSu. Wszystko musiaÅ‚em zaimplementowaÄ‡ samemu, wÅ‚Ä…czajÄ…c w to generacjÄ™ obrazu linia po linii ( czyli to, czym normalnie zajmuje siÄ™ karta graficzna ), gdzie musiaÅ‚em liczyÄ‡ instrukcje co do cyklu, w innym przypadku obraz rozsynchronizowywaÅ‚ siÄ™ lub wyÅ›wietlaÅ‚ bÅ‚Ä™dnie, nastÄ™pnie funkcje wyÅ¼szego poziomu jak wyÅ›wietlanie tilesa i pÃ³Åºniej wyÅ›wietlanie fontÃ³w czy obrazkÃ³w.
 
 Kod: http://dl.dropbox.com/u/1753596/VGA_Tetris_src.zip 
 Schemat i PCB: http://dl.dropbox.com/u/1753596/VGA_Tetris_schemat.zip 
 
-Je¿eli kogoœ interesuje reszta technikalii to zapraszam tutaj: http://www.elektroda.pl/rtvforum/topic2177246.html 
+JeÅ¼eli kogoÅ› interesuje reszta technikalii to zapraszam tutaj: http://www.elektroda.pl/rtvforum/topic2177246.html 
 
-Tutaj projekt, w którym autor wyci¹gn¹³ wszystko z tego 8bitowca. Pe³en szacun. http://www.linusakesson.net/scene/craft/
+Tutaj projekt, w ktÃ³rym autor wyciÄ…gnÄ…Å‚ wszystko z tego 8bitowca. PeÅ‚en szacun. http://www.linusakesson.net/scene/craft/
