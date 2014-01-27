@@ -36,9 +36,10 @@ Presentation (in Polish):
 
 https://www.youtube.com/watch?v=FwZ4Or7Z6ZU
 
-![schematics](schematics/schematics.png)
+![demo](photos/demo.jpg)
 ![top](photos/top.JPG)
 ![board](photos/board.JPG)
+![schematics](schematics/schematics.png)
   
 More info (in Polish): http://www.elektroda.pl/rtvforum/topic2177246.html  
   
