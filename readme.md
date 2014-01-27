@@ -6,13 +6,13 @@ Yeah, I know. Yet another tetris. But how mine clone is different?
 - Architecture - it's not a PC, smartphone or cellphone, I've created my own platform based on 8bit microcontroller
 - Code - I decided to write whole game in assembly
   
-License: MIT
+**License: MIT**
   
 Specification
-Processor: Atmega8 (8kB flash, 1kB SRAM) 
-Graphics: 104x120px, 16colors 
-Input: Gamepad from Pegasus (Polish Famicom clone) (8 buttons) 
-Audio: Mono, generated using PWM (unfortunately, not implemented, not enough time) 
+- Processor: Atmega8 (8kB flash, 1kB SRAM) 
+- Graphics: 104x120px, 16colors 
+- Input: Gamepad from Pegasus (Polish Famicom clone) (8 buttons) 
+- Audio: Mono, generated using PWM (unfortunately, not implemented, not enough time) 
   
 
   
