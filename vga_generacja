@@ -1,0 +1,50 @@
+Jeżeli chodzi o generację obrazu - wszystko opiera się o czasy. Najlepiej napisać to w assemblerze, bo mamy kontrolę co do cyklu. No, może nie cały program, ale samo przerwanie do generacji linii. Dobrze jest je stworzyć używając timera. W zależności od kwarcu mamy różną ilość czasu na generację - ja używałem 20MHz, ale obraz generuje się w częstotliwości 25.175MHz i dla takiej wartości będę pisał.
+
+VGA ma 5 podstawowych sygnałów:
+- [b]Red[/b]
+- [b]Green[/b]
+- [b]Blue[/b]
+- [b]HSYNC [/b](w spoczynku 5v, czyli np. jak wyświetlamy kolory)
+- [b]VSYNC [/b](w spoczynku 5v)
+
+Jeżeli chodzi o 3 pierwsze to raczej nie ma wątpliwości - 0.0v na jednym z nich to brak tej barwy, a 0.7v (niektóre monitory obsługują 1.0v, ale lepiej nie ryzykować) to pełna barwa. Czyli chcąc wyświetlić czarny mamy pokolei: 0v, 0v, 0v. Dla białego - 0.7v, 0.7v, 0.7v. Dla czerwonego - 0.7v, 0v, 0v, itd. Jasne? Ok, to lecimy dalej.
+
+Chcemy generować obraz o rozdzielczości 640x480@60Hz - czyli minimum jakie można osiągnąć na monitorze.
+Dla kwarcu 25.175MHz jeden cykl to jeden piksel. Czyli na jedną linię mamy 640 cykli.  Ale na tym się nie kończy, bo monitor musi mieć czas na przemieszczanie działka, którym strzela kolorami (vga było stworzone dla CRT, tam obraz był tworzony inaczej niż w LCD). Dlatego potrzebujemy jeszcze 160 cykli na przemieszczenie działka. Więc jedna linia to 640+160 = 800 cykli. 
+Ok, przez 640 cykli procesora co cykl wypluwamy nowy kolor - banał. Następnie, gdy skończymy wyświetlać obraz musimy ustawić kolor czarny. Inaczej monitor nie wie, czy to co wyświetlamy to obraz czy sygnały kontrolne.
+Czyli - 640 cykli - różne kolory, następnie ustawiamy czarny.
+Pozostałe 160 cykli zostało podzielone na 3 fazy: [b]HFP[/b], [b]HSP[/b], [b]HBP[/b]. Są to angielskie skróty, nie będę ich rozwijał.
+[b]HFP [/b]- 16 cykli
+[b]HSP [/b]- 96 cykli
+[b]HBP [/b]- 48 cykli
+
+Przez [b]HFP [/b]nie robimy nic. Ja ten czas przeznaczyłem na wyrównanie timera (taka głupota w rdzeniu AVR - aby przerwanie się wykonało to obecna instrukcja musi się wykonać - a to zajmuje różną ilość czasu i rozsynchronizowuje obraz.
+Na początku [b]HSP [/b]musimy ustawić [b]HSYNC[/b]. Czyli na tą linie wypluwamy 0v. Tyle, dalej nic nie robimy (tutaj robię jakieś obliczenia, nie pamiętam już co).
+Na początku [b]HBP [/b]trzeba z powrotem  na linię [b]HSYNC [/b]podać 5v. To wszystko.
+Tak wygląda generacja jednej linii.
+(dla kwarcu 20MHz, wszystko wygląda tak samo, ale ilość cykli jest odpowiednio przemnożona - 512 cykli na kolory, [b]HFP [/b]- 12, [b]HSP [/b]- 76, [b]HBP [/b]- 36 - tutaj pokazane: http://www.lucidscience.com/projects/VGA%20Video%20Generator/12.jpg )
+
+
+Skoro generujemy obraz 640x480 taki proces generowania trzeba powtórzyć 480 razy. Przez 480 takich linii nic się nie zmienia, oczywiście oprócz tego co wyświetlamy. Obliczanie, którą linię wyświetlam obliczam podczas wolnych cykli w HSP i HBP.
+
+Ale został nam jeszcze sygnał VSYNC - co z nim? Po wygenerowaniu 480 linii musimy poświęcić jeszcze 44 linie na VSYNC. Te 44 linie zostały podzielone również na 3 fazy:
+[b]VFP [/b]- 11 linii
+[b]VSP [/b]- 2 linie
+[b]VBP [/b]- 31 linii
+
+Przez [b]VFP[/b] nie robimy nic. Nie wyświetlamy żadnego koloru, HSYNC generujemy tak jak normalnie. Ja w tym momencie wychodzę z przerwania i zwalniam czas procesora na obliczenia logiki gry.
+[b]VSP[/b] - Tutaj na początku trzeba ustawić linię VSYNC na 0v. Na początku czyli w tym momencie gdy zaczęlibyśmy normalnie wyświetlać kolory. Przez resztę czasu nie robimy nic jak w poprzednim przypadku.
+[b]VBP[/b] - Na początku ustawiamy VSYNC z powrotem na 5v i reszta jak w poprzednim przypadku.
+
+Oczywiście tutaj ilość linii będzie inna dla częstotliwości 20MHz i znowu odsyłam tutaj: http://www.lucidscience.com/projects/VGA%20Video%20Generator/12.jpg
+
+Właściwie to już tyle. Czas wolny podczas generowania linii poświęcam na sprawdzanie, którą linię trzeba wyświetlić oraz miałem tutaj generować dźwięk, ale to nie wypaliło.
+
+
+Mam nadzieję, że nie zapomniałem o niczym ważnym, jednak temat ukazałem tylko powierzchniowo. Polecam wczytać się w artykuły które podałem (szczególnie Lucidscience - po lekturze artykułu nie miałem praktycznie żadnych wątpliwości). Pamiętaj również o różnicach w czasach dla różnych kwarców!
+
+
+Oj, troszkę się rozpisałem :) Chyba zamieszczę wiadomość na forum, być może przyda się innym.
+
+Pozdrawiam, życzę udanych projektów.
+Jakub Czekański
