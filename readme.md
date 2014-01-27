@@ -6,6 +6,7 @@ Yeah, I know. Yet another tetris. But how mine clone is different?
 - Architecture - it's not a PC, smartphone or cellphone, I've created my own platform based on 8bit microcontroller
 - Code - I decided to write whole game in assembly
   
+License: MIT
   
 Specification
 Processor: Atmega8 (8kB flash, 1kB SRAM) 
