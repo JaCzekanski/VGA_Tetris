@@ -1,6 +1,6 @@
 ﻿## VGA Tetris - assembly, atmega8, software vga
 
-![front](front.png)
+![front](photos/front.png)
 
 Yeah, I know. Yet another tetris. But how mine clone is different?  
 - Architecture - it's not a PC, smartphone or cellphone, I've created my own platform based on 8bit microcontroller
@@ -36,8 +36,8 @@ Presentation (in Polish):
 https://www.youtube.com/watch?v=FwZ4Or7Z6ZU
 
 ![schematics](schematics/schematics.png)
-![top](photos/top.jpg)
-![board](photos/board.jpg)
+![top](photos/top.JPG)
+![board](photos/board.JPG)
   
 More info (in Polish): http://www.elektroda.pl/rtvforum/topic2177246.html  
   
